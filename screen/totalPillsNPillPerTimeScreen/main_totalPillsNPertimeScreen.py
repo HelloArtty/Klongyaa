@@ -161,7 +161,7 @@ class AmountPillPerTimeScreen(QDialog):
         self.no_channel.setAlignment(QtCore.Qt.AlignCenter)
         self.no_channel.setObjectName("no_channel")
         self.text_question_amount_pill_per_time = QtWidgets.QLabel(background_amount_pill_per_time)
-        self.text_question_amount_pill_per_time.setGeometry(QtCore.QRect(125, 90, 550, 80))
+        self.text_question_amount_pill_per_time.setGeometry(QtCore.QRect(40, 100, 720, 80))
         self.text_question_amount_pill_per_time.setStyleSheet("font: 34pt \"JasmineUPC\";")
         self.text_question_amount_pill_per_time.setObjectName("text_question_amount_pill_per_time")
         self.lcdNumberPillPerTime = QtWidgets.QLCDNumber(background_amount_pill_per_time)
