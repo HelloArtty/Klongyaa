@@ -1,20 +1,14 @@
 import sys
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QApplication, QStackedWidget, QInputDialog, QMessageBox
-from shared.data.light_list import lightList
-from shared.data.mock.config import config
-import speech_recognition as sr
-from screen.pillSummaryScreen.main_pillSummaryScreen import PillSummaryScreen
-from screen.inputTimesToTakePill.main_inputTimesToTakePill import *
 import requests
-
-# Screen UI
+import speech_recognition as sr
+from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtWidgets import QApplication, QStackedWidget, QDialog, QDialogButtonBox, QLabel, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout, QGridLayout
 from screen.homeScreen.main_homeScreen import HomeScreen
+from shared.data.mock.config import config
 
 config_path = "/home/klongyaa1/Desktop/GUI-Klongyaa-seniorProject/shared/data/mock/config.py"
 
 haveToTake = []
-
 # Function for speech recognition
 def speech_recog_function():
     mic = sr.Microphone(device_index=2)
@@ -25,8 +19,6 @@ def speech_recog_function():
         text = recog.recognize_google(audio, language="th")
     
     return text
-
-
 
 def save_userId(userId):
     global config_path
@@ -40,22 +32,19 @@ def save_userId(userId):
                 file.write(line)
 
 def show_confirmation_dialog(user_id):
-    dialog = QtWidgets.QDialog()
+    dialog = QDialog()
     dialog.setWindowTitle("Confirm")
     dialog.resize(800, 480)
     dialog.setStyleSheet("background-color : #97C7F9 ")
 
-    layout = QtWidgets.QVBoxLayout()
+    layout = QVBoxLayout()
 
-    # สร้าง QLabel สำหรับข้อความยืนยัน
-    label = QtWidgets.QLabel(f"รหัสของคุณคือ<br><font color='red'>{user_id}</font><br>กรุณาตรวจสอบให้เรียบร้อยก่อนกดยืนยัน")
+    label = QLabel(f"รหัสของคุณคือ<br><font color='red'>{user_id}</font><br>กรุณาตรวจสอบให้เรียบร้อยก่อนกดยืนยัน")
     label.setStyleSheet("font-size: 34px; font-weight: bold; margin-bottom: 20px; text-align: center;")
     label.setAlignment(QtCore.Qt.AlignCenter)
     layout.addWidget(label)
-    
 
-    # สร้าง QDialogButtonBox พร้อมปุ่ม Ok และ Cancel
-    buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
+    buttonBox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
     buttonBox.setStyleSheet("QPushButton { font-size: 18px; padding: 10px; }")
     layout.addWidget(buttonBox)
 
@@ -67,19 +56,19 @@ def show_confirmation_dialog(user_id):
     return dialog.exec_()
 
 def show_error_dialog(message):
-    dialog = QtWidgets.QDialog()
+    dialog = QDialog()
     dialog.setWindowTitle("Error")
     dialog.resize(800, 480)
     dialog.setStyleSheet("background-color : #97C7F9 ")
 
-    layout = QtWidgets.QVBoxLayout()
+    layout = QVBoxLayout()
 
-    label = QtWidgets.QLabel(message)
+    label = QLabel(message)
     label.setStyleSheet("font-size: 34px; font-weight: bold; margin-bottom: 20px; text-align: center; color: red;")
     label.setAlignment(QtCore.Qt.AlignCenter)
     layout.addWidget(label)
 
-    buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok)
+    buttonBox = QDialogButtonBox(QDialogButtonBox.Ok)
     buttonBox.setStyleSheet("QPushButton { font-size: 16px; padding: 10px; }")
     layout.addWidget(buttonBox)
 
@@ -89,53 +78,194 @@ def show_error_dialog(message):
 
     dialog.exec_()
 
+# def check_and_update_user_id():
+#     global config
+
+#     while not config['userId']:
+#         dialog = QDialog()
+#         dialog.setWindowTitle("User ID")
+#         dialog.resize(800, 480)
+#         dialog.setStyleSheet("background-color : #97C7F9 ")
+
+#         layout = QVBoxLayout()
+
+#         label = QLabel("กรุณากรอกรหัสของคุณ")
+#         label.setStyleSheet("font-size: 34px; font-weight: bold; margin-bottom: 20px; text-align: center;")
+#         label.setAlignment(QtCore.Qt.AlignCenter)
+#         layout.addWidget(label)
+
+#         edit = QLineEdit()
+#         edit.setStyleSheet("font-size: 16px; padding: 10px; background-color : lightgray")
+#         edit.setFixedSize(780, 40)
+#         layout.addWidget(edit)
+
+#         keyboard_layout = QGridLayout()
+#         layout.addLayout(keyboard_layout)
+
+#         # Create buttons for letters A-Z
+#         letters = [
+#             ('A', 1, 0), ('B', 1, 1), ('C', 1, 2), ('D', 1, 3), ('E', 1, 4),
+#             ('F', 1, 5), ('G', 1, 6), ('H', 1, 7), ('I', 1, 8), ('J', 1, 9),
+#             ('K', 2, 0), ('L', 2, 1), ('M', 2, 2), ('N', 2, 3), ('O', 2, 4),
+#             ('P', 2, 5), ('Q', 2, 6), ('R', 2, 7), ('S', 2, 8), ('T', 2, 9),
+#             ('U', 3, 0), ('V', 3, 1), ('W', 3, 2), ('X', 3, 3), ('Y', 3, 4), ('Z', 3, 5)
+#         ]
+
+#         # Create buttons for numbers 0-9
+#         numbers = [
+#             ('0', 4, 0), ('1', 4, 1), ('2', 4, 2), ('3', 4, 3), ('4', 4, 4),
+#             ('5', 4, 5), ('6', 4, 6), ('7', 4, 7), ('8', 4, 8), ('9', 4, 9)
+#         ]
+
+#         # Function to handle button clicks
+#         def on_button_click(text):
+#             current_text = edit.text()
+#             edit.setText(current_text + text)
+
+#         # Add buttons for letters
+#         for text, row, col in letters:
+#             button = QPushButton(text)
+#             button.setStyleSheet("font-size: 16px; padding: 10px;")
+#             button.clicked.connect(lambda _, t=text: on_button_click(t))
+#             keyboard_layout.addWidget(button, row, col, 1, 1)
+
+#         # Add buttons for numbers
+#         for text, row, col in numbers:
+#             button = QPushButton(text)
+#             button.setStyleSheet("font-size: 16px; padding: 10px;")
+#             button.clicked.connect(lambda _, t=text: on_button_click(t))
+#             keyboard_layout.addWidget(button, row, col, 1, 1)
+
+#         buttonBox = QDialogButtonBox(QDialogButtonBox.Ok)
+#         buttonBox.setStyleSheet("QPushButton { font-size: 16px; padding: 10px; }")
+#         layout.addWidget(buttonBox)
+
+#         buttonBox.accepted.connect(dialog.accept)
+#         buttonBox.rejected.connect(dialog.reject)
+
+#         dialog.setLayout(layout)
+
+#         if dialog.exec_() == QDialog.Accepted:
+#             user_id = edit.text()
+#             if user_id:
+#                 if show_confirmation_dialog(user_id) == QDialog.Accepted:
+#                     save_userId(user_id)
+#                     config['userId'] = user_id
+#                 else:
+#                     continue
+#             elif user_id == "":
+#                 show_error_dialog("User ID cannot be empty!")
+#             else:
+#                 show_error_dialog("User ID is required!")
+
 def check_and_update_user_id():
-    while not config['userId']:  # ตรวจสอบว่าค่า userId ใน config มีค่าอยู่หรือไม่ ถ้าไม่มีก็จะวนลูป
-        dialog = QtWidgets.QDialog()  # สร้าง QDialog สำหรับรับค่า userId
-        dialog.setWindowTitle("User ID")  # ตั้งชื่อหน้าต่างเป็น "User ID"
-        dialog.resize(800, 480)  # ตั้งขนาดหน้าต่างเป็น 800x480
+    global config
+
+    while not config['userId']:
+        dialog = QDialog()
+        dialog.setWindowTitle("User ID")
+        dialog.resize(800, 480)
         dialog.setStyleSheet("background-color : #97C7F9 ")
 
-        layout = QtWidgets.QVBoxLayout()  # สร้าง QVBoxLayout สำหรับจัดวาง widget ในแนวตั้ง
+        layout = QVBoxLayout()
 
-        # สร้าง QLabel สำหรับข้อความ "กรุณากรอกรหัสของคุณ"
-        label = QtWidgets.QLabel("กรุณากรอกรหัสของคุณ")
-        # ตั้งค่ารูปแบบของข้อความ
+        label = QLabel("กรุณากรอกรหัสของคุณ")
         label.setStyleSheet("font-size: 34px; font-weight: bold; margin-bottom: 20px; text-align: center;")
-        label.setAlignment(QtCore.Qt.AlignCenter)  # จัดข้อความให้อยู่ตรงกลาง
-        edit = QtWidgets.QLineEdit()  # สร้าง QLineEdit สำหรับให้ผู้ใช้กรอก userId
-        edit.setStyleSheet("font-size: 16px; padding: 10px; background-color : lightgray")  # ตั้งค่ารูปแบบของ QLineEdit
-        edit.setFixedSize(780, 40)  # ตั้งขนาด QLineEdit เป็น 780x40
-        layout.addWidget(label)  # เพิ่ม QLabel ลงใน layout
-        layout.addWidget(edit)  # เพิ่ม QLineEdit ลงใน layout
+        label.setAlignment(QtCore.Qt.AlignCenter)
+        layout.addWidget(label)
 
-        # สร้าง QDialogButtonBox พร้อมปุ่ม Ok
-        buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok)
-        # ตั้งค่ารูปแบบของปุ่ม
+        edit = QLineEdit()
+        edit.setStyleSheet("font-size: 16px; padding: 10px; background-color : lightgray")
+        edit.setFixedSize(780, 40)
+        layout.addWidget(edit)
+
+        keyboard_layout = QGridLayout()
+        layout.addLayout(keyboard_layout)
+
+        # Create buttons for letters A-Z
+        letters = [
+            ('a', 1, 0), ('b', 1, 1), ('c', 1, 2), ('d', 1, 3), ('e', 1, 4),
+            ('f', 1, 5), ('g', 1, 6), ('h', 1, 7), ('i', 1, 8), ('j', 1, 9),
+            ('k', 2, 0), ('l', 2, 1), ('m', 2, 2), ('n', 2, 3), ('o', 2, 4),
+            ('p', 2, 5), ('q', 2, 6), ('r', 2, 7), ('s', 2, 8), ('t', 2, 9),
+            ('u', 3, 0), ('v', 3, 1), ('w', 3, 2), ('x', 3, 3), ('y', 3, 4), ('z', 3, 5)
+        ]
+
+        # Create buttons for numbers 0-9
+        numbers = [
+            ('0', 4, 0), ('1', 4, 1), ('2', 4, 2), ('3', 4, 3), ('4', 4, 4),
+            ('5', 4, 5), ('6', 4, 6), ('7', 4, 7), ('8', 4, 8), ('9', 4, 9)
+        ]
+
+        # Function to handle button clicks
+        def on_button_click(text):
+            current_text = edit.text()
+            edit.setText(current_text + text)
+
+        # Function to handle shift button click
+        shift_pressed = False
+
+        def on_shift_click():
+            nonlocal shift_pressed
+            shift_pressed = not shift_pressed
+            # Change letter buttons to uppercase if shift is pressed
+            for button, (text, row, col) in letter_buttons.items():
+                button.setText(text.upper() if shift_pressed else text)
+
+        # Function to handle delete button click
+        def on_delete_click():
+            edit.backspace()
+
+        # Add buttons for letters
+        letter_buttons = {}
+        for text, row, col in letters:
+            button = QPushButton(text)
+            button.setStyleSheet("font-size: 16px; padding: 10px;")
+            button.clicked.connect(lambda _, t=text: on_button_click(t.upper() if shift_pressed else t))
+            keyboard_layout.addWidget(button, row, col, 1, 1)
+            letter_buttons[button] = (text, row, col)
+
+        # Add shift button
+        shift_button = QPushButton("Shift")
+        shift_button.setStyleSheet("font-size: 16px; padding: 10px;")
+        shift_button.clicked.connect(on_shift_click)
+        keyboard_layout.addWidget(shift_button, 0, 10, 1, 2)
+
+        # Add delete button
+        delete_button = QPushButton("Delete")
+        delete_button.setStyleSheet("font-size: 16px; padding: 10px;")
+        delete_button.clicked.connect(on_delete_click)
+        keyboard_layout.addWidget(delete_button, 3, 6, 1, 1)
+
+        # Add buttons for numbers
+        for text, row, col in numbers:
+            button = QPushButton(text)
+            button.setStyleSheet("font-size: 16px; padding: 10px;")
+            button.clicked.connect(lambda _, t=text: on_button_click(t))
+            keyboard_layout.addWidget(button, row, col, 1, 1)
+
+        buttonBox = QDialogButtonBox(QDialogButtonBox.Ok)
         buttonBox.setStyleSheet("QPushButton { font-size: 16px; padding: 10px; }")
-        buttonBox.setFixedSize(780, 40)  # ตั้งขนาดของปุ่มเป็น 780x40
-        layout.addWidget(buttonBox)  # เพิ่ม QDialogButtonBox ลงใน layout
+        layout.addWidget(buttonBox)
 
-        buttonBox.accepted.connect(dialog.accept)  # เชื่อมสัญญาณ accepted ของปุ่ม Ok กับฟังก์ชัน accept ของ dialog
-        buttonBox.rejected.connect(dialog.reject)  # เชื่อมสัญญาณ rejected ของปุ่ม Ok กับฟังก์ชัน reject ของ dialog
+        buttonBox.accepted.connect(dialog.accept)
+        buttonBox.rejected.connect(dialog.reject)
 
-        dialog.setLayout(layout)  # ตั้ง layout ให้กับ dialog
+        dialog.setLayout(layout)
 
-        if dialog.exec_() == QtWidgets.QDialog.Accepted:  # ถ้าผู้ใช้กดปุ่ม Ok ใน dialog
-            user_id = edit.text()  # รับค่าจาก QLineEdit
-            if user_id:  # ถ้ามีค่าที่กรอก
-                # แสดงกล่องข้อความเพื่อยืนยันการกรอก userId
-                if show_confirmation_dialog(user_id) == QtWidgets.QDialog.Accepted:  # ถ้าผู้ใช้กดปุ่ม Ok
-                    save_userId(user_id)  # เรียกฟังก์ชัน save_userId เพื่อบันทึก userId
-                    config['userId'] = user_id  # ตั้งค่า userId ใน config ให้เป็นค่าที่กรอก
+        if dialog.exec_() == QDialog.Accepted:
+            user_id = edit.text()
+            if user_id:
+                if show_confirmation_dialog(user_id) == QDialog.Accepted:
+                    save_userId(user_id)
+                    config['userId'] = user_id
                 else:
-                    continue  # ถ้าผู้ใช้กดปุ่ม Cancel จะกลับไปให้กรอกใหม่อีกครั้ง
-            elif user_id == "":  # ถ้าไม่ได้กรอกค่าอะไร
-                show_error_dialog("User ID cannot be empty!")  # แสดงข้อความแจ้งเตือนว่า userId ไม่สามารถเป็นค่าว่างได้
+                    continue
+            elif user_id == "":
+                show_error_dialog("User ID cannot be empty!")
             else:
-                show_error_dialog("User ID is required!")  # แสดงข้อความแจ้งเตือนว่า userId เป็นสิ่งจำเป็น
-
-
+                show_error_dialog("User ID is required!")
+                
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     
@@ -181,5 +311,3 @@ if __name__ == "__main__":
     widget.setFixedHeight(480)
     widget.show()
     sys.exit(app.exec_())
-
-    
