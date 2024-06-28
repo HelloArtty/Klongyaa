@@ -66,7 +66,7 @@ def pick_pill_detection(first_load_value,dout_pin,pd_sck_pin, led):
         else:
             weight_difference = abs(first_load_grams - current_weight_grams) 
             print(f"ความแตกต่างของน้ำหนัก: {weight_difference:.2f} กรัม")
-            if weight_difference > 0.50:
+            if weight_difference > 0.35:
                 led.off()
                 print("ตรวจพบการหยิบยา")
                 return False
@@ -78,11 +78,16 @@ def pick_pill_detection(first_load_value,dout_pin,pd_sck_pin, led):
         print(f"เกิดข้อผิดพลาดใน pick_pill_detection: {e}")
         led.off()
         return False
+    
 
 
-# led = LED(17)  # แทนที่ด้วยหมายเลขพิน LED ที่ใช้จริง
-# first_load_value = get_first_load_value(31,29)
+'''
+dt = 7
+sck = 11
+first_load_value = get_first_load_value(dt,sck)
 
-# while True:
-#     result = pick_pill_detection(first_load_value,31,29, led)
-#     time.sleep(1)  #fv 
+
+
+while True:
+    result = pick_pill_detection(first_load_value,dt,sck)
+    time.sleep(1)  #fv'''

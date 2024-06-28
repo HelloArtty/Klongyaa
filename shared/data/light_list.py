@@ -39,8 +39,8 @@ lightList = {
         "firstWeightValue": -1
     },
     "5": {
-        "dout":23,
-        "pdPin":27,
+        "dout":38,
+        "pdPin":40,
         "led": LED(1),
         "haveToTake": False,
         "firstWeightValue": -1
@@ -48,15 +48,16 @@ lightList = {
     "6": {
         "dout":29,
         "pdPin":31,
-        "led": LED(12),
+        "led": LED(11),
         "haveToTake": False,
         "firstWeightValue": -1
     },
     "7": {
         "dout":33,
         "pdPin":35,
-        "led": LED(16),
+        "led": LED(0),
         "haveToTake": False,
         "firstWeightValue": -1
     },
+    
 }

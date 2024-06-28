@@ -141,39 +141,92 @@ class LoadingVoiceScreen(QDialog):
     def startAnimation(self):
         self.movie.start()
 
+    # def stopAnimation(self, voiceInput):
+    #     self.movie.stop()
+    #     self.close()
+    #     #================ go to add summary time screen ====================#
+    #     global globalTimesToTakePillArr
+
+    #     correctInput = True
+        
+    #     if '.' in voiceInput :
+    #         voiceInput = voiceInput.replace('.', ':')
+
+    #     if len(voiceInput.split(':')[0]) == 1:
+    #         voiceInput = "0" + voiceInput
+
+    #     if voiceInput == "เที่ยง" :
+    #         voiceInput = "12:00"
+    #     elif voiceInput == "เที่ยงคืน" or voiceInput == "24:00":
+    #         voiceInput = "00:00"
+    #     elif voiceInput.endswith('โมง'):
+    #         if voiceInput.split(' ')[0] == 'บ่าย' : 
+    #             voiceInput = "13:00"
+    #         else :
+    #             numericTime = int(voiceInput.split(' ')[0]) + 12
+    #             voiceInput = str(numericTime) + ":00"
+    #     elif voiceInput.endswith(' น') :
+    #         voiceInput = voiceInput.split(' ')[0]
+    #     else :
+    #         correctInput = False
+            
+    #     if correctInput :
+    #         if self.editIndex == -1 :
+    #             globalTimesToTakePillArr.append(voiceInput)
+    #         else :
+    #             globalTimesToTakePillArr[self.editIndex] = voiceInput
+
+    #         # Sorting Time
+    #         globalTimesToTakePillArr.sort(key=lambda time: datetime.strptime(time, "%H:%M"))
+    #         globalPillData['timeToTake'] = globalTimesToTakePillArr
+
+    #         add_summary_time_screen = AddSummaryTimeScreen(globalPillData)
+    #         __main__.widget.addWidget(add_summary_time_screen)
+    #         __main__.widget.setCurrentIndex(__main__.widget.currentIndex()+1)
+    #     else :
+    #         __main__.widget.removeWidget(self)
+    #         __main__.widget.setCurrentIndex(__main__.widget.currentIndex())
+
+
     def stopAnimation(self, voiceInput):
         self.movie.stop()
         self.close()
         #================ go to add summary time screen ====================#
         global globalTimesToTakePillArr
 
+        if voiceInput is None or voiceInput.strip() == "":
+            print("Invalid voice input")
+            __main__.widget.removeWidget(self)
+            __main__.widget.setCurrentIndex(__main__.widget.currentIndex())
+            return
+
         correctInput = True
-        
-        if '.' in voiceInput :
+
+        if '.' in voiceInput:
             voiceInput = voiceInput.replace('.', ':')
 
         if len(voiceInput.split(':')[0]) == 1:
             voiceInput = "0" + voiceInput
 
-        if voiceInput == "เที่ยง" :
+        if voiceInput == "เที่ยง":
             voiceInput = "12:00"
         elif voiceInput == "เที่ยงคืน" or voiceInput == "24:00":
             voiceInput = "00:00"
         elif voiceInput.endswith('โมง'):
-            if voiceInput.split(' ')[0] == 'บ่าย' : 
+            if voiceInput.split(' ')[0] == 'บ่าย':
                 voiceInput = "13:00"
-            else :
+            else:
                 numericTime = int(voiceInput.split(' ')[0]) + 12
                 voiceInput = str(numericTime) + ":00"
-        elif voiceInput.endswith(' น') :
+        elif voiceInput.endswith(' น'):
             voiceInput = voiceInput.split(' ')[0]
-        else :
+        else:
             correctInput = False
-            
-        if correctInput :
-            if self.editIndex == -1 :
+
+        if correctInput:
+            if self.editIndex == -1:
                 globalTimesToTakePillArr.append(voiceInput)
-            else :
+            else:
                 globalTimesToTakePillArr[self.editIndex] = voiceInput
 
             # Sorting Time
@@ -182,10 +235,11 @@ class LoadingVoiceScreen(QDialog):
 
             add_summary_time_screen = AddSummaryTimeScreen(globalPillData)
             __main__.widget.addWidget(add_summary_time_screen)
-            __main__.widget.setCurrentIndex(__main__.widget.currentIndex()+1)
-        else :
+            __main__.widget.setCurrentIndex(__main__.widget.currentIndex() + 1)
+        else:
             __main__.widget.removeWidget(self)
             __main__.widget.setCurrentIndex(__main__.widget.currentIndex())
+
 
 #เพิ่มเวลาทานยา
 class AddSummaryTimeScreen(QDialog):

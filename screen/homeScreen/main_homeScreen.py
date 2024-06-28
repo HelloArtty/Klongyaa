@@ -4,6 +4,7 @@ import __main__
 import sys
 import os
 sys.path.append(os.path.abspath('/home/klongyaa1/Desktop/GUI-Klongyaa-seniorProject'))
+
 from screen.inputPillNameScreen.main_inputPillnameScreen import InputPillNameScreen
 from screen.pillDetailScreen.main_detail_screen import DetailScreen
 from functools import partial
@@ -152,6 +153,7 @@ class HomeScreen(QDialog):
 
             pill_channel_buttons.append(pill_channel_btn)
 
+        #เดี๋ยวมาแก้
         if self.config["isFirstUse"] :
             self.frame = QtWidgets.QFrame(UIHomeScreen)
             self.frame.setGeometry(QtCore.QRect(30, 20, 961, 551))
