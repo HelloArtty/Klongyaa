@@ -52,9 +52,9 @@ color: #070021;
   <widget class="QLabel" name="text_question_amount_pill_per_time">
    <property name="geometry">
     <rect>
-     <x>125</x>
-     <y>90</y>
-     <width>550</width>
+     <x>40</x>
+     <y>100</y>
+     <width>720</width>
      <height>80</height>
     </rect>
    </property>
@@ -62,7 +62,7 @@ color: #070021;
     <string notr="true">font: 34pt &quot;JasmineUPC&quot;;</string>
    </property>
    <property name="text">
-    <string>กรุณาระบุจำนวนเม็ดยาที่ต้องทาน</string>
+    <string>กรุณาระบุจำนวนเม็ดยาที่ต้องทานในเเต่ละมื้อ</string>
    </property>
   </widget>
   <widget class="QLCDNumber" name="lcdNumberPillPerTime">

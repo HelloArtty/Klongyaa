@@ -20,7 +20,7 @@ from pygame import mixer
 from linebot import LineBotApi
 from linebot.models import TextMessage
 
-from screen.homeScreen.ldr import getFirstLightValue, pickPillDetection
+from screen.homeScreen.ldr import get_first_load_value, pick_pill_detection
 
 isChangePage = False
 isSoundOn = False
@@ -67,10 +67,13 @@ def sendLateMessage(pill_data, timeWillTake):
     line_bot_api = LineBotApi(__main__.config['botAccessToken'])
     line_bot_api.push_message(__main__.config['userId'], TextMessage(text=text))
     res = requests.post(__main__.config["url"] + "/pill-data/addLogHistory", json={
-            "channel_id": str(pill_data["id"]+1),
-            "line_uid": __main__.config["userId"],
+            "channelID": str(pill_data["id"]),
+            "lineUID": __main__.config["userId"],
             "task": "Forgot to take pill"
             })
+    
+    print(str(pill_data["id"]))
+    print(f'res {res}')
     print('Forgot to take pill')
 
 def sendLineMessage(pill_data, timeWillTake):
@@ -81,15 +84,15 @@ def sendLineMessage(pill_data, timeWillTake):
     if inMinute.startswith('0') :
         print(inMinute)
         inMinute = inMinute[1]
-    text = f'ผู้สูงอายุมียา {pill_name} ต้องทาน จำนวน {pill_amount_pertime} เม็ด ในอีก {inMinute} นาที'
+    text = f'ผู้สูงอายุมียาต้องทานในอีก {inMinute} นาที'
     line_bot_api = LineBotApi(__main__.config['botAccessToken'])
     line_bot_api.push_message(__main__.config['userId'], TextMessage(text=text))
     res = requests.post(__main__.config["url"] + "/pill-data/addLogHistory", json={
-            "channel_id": str(pill_data["id"]+1),
-            "line_uid": __main__.config["userId"],
-            "task": "Take pill remider"
+            "channelID": str(pill_data["id"]),
+            "lineUID": __main__.config["userId"],
+            "task": "Take pill remider",
             })
-    print('Take pill remider')
+    print(f'res : {res}')
 
 class HomeScreen(QDialog):
     def __init__(self, pill_channel_datas, config):
@@ -225,29 +228,31 @@ class HomeScreen(QDialog):
                 alreadyTake = True
                 
         light = __main__.lightList[str(index)]
-        if light["ledPin"] != -1 and not alreadyTake:
-            if light["firstLightValue"] == -1:
-                value = getFirstLightValue(light["resistorPin"])
-                __main__.lightList[str(index)]["firstLightValue"] = value
-
-            firstLightValue = __main__.lightList[str(index)]["firstLightValue"]
-            resistorPin = __main__.lightList[str(index)]["resistorPin"]
-            ledPin = __main__.lightList[str(index)]["ledPin"]
+        if light["dout"] != -1 and light["pdPin"] != -1 and not alreadyTake:
+        # if True:
+            if light["firstWeightValue"] == -1:
+                dout = __main__.lightList[str(index)]["dout"]
+                pdPin = __main__.lightList[str(index)]["pdPin"]
+                value = get_first_load_value(dout,pdPin) # Don't forget to adding this Register Pin parameter
+                __main__.lightList[str(index)]["firstWeightValue"] = value
+            firstWeightValue = __main__.lightList[str(index)]["firstWeightValue"]
+            dout = __main__.lightList[str(index)]["dout"]
+            pdPin = __main__.lightList[str(index)]["pdPin"]
             led = __main__.lightList[str(index)]["led"]
-            isLightOn = pickPillDetection(firstLightValue, resistorPin, ledPin, led)
-
+            isLightOn = pick_pill_detection(firstWeightValue, dout, pdPin, led) # Don't forget to adding this Register Pin parameter
             if not isLightOn :
                 stopSound()
                 __main__.lightList[str(index)]["firstLightValue"] = -1
-                print("hahahaha")
+                print("Not light on")
                 for no, item in enumerate(__main__.haveToTake) :
                     if item["id"] == index :
                         __main__.haveToTake[no]["isTaken"] = True
                         res = requests.post(__main__.config["url"] + "/pill-data/addLogHistory", json={
-                                "channel_id": str(item["id"]+1),
-                                "line_uid": __main__.config["userId"],
+                                "channelID": str(item["id"]),
+                                "lineUID": __main__.config["userId"],
                                 "task": "Take pill"
                                 })
+                        print(f'res : {res}')
                         print('Take pill')
 
     def checkTakePill(self, n, pill_channel_buttons, pill_channel_datas) :
@@ -324,7 +329,7 @@ class HomeScreen(QDialog):
                         
                     else :
                         if checkIsTaken(index) == "not take" and checkIsSendLateMessage(index) == "not send":
-                            print("not pickkkkk")
+                            print("User have not take the pill")
                         
                             sendLateMessage(pill_channel_datas[str(index)], time)                   
                             for no, item in enumerate(__main__.haveToTake):
@@ -382,7 +387,7 @@ class HomeScreen(QDialog):
                 else :
                     # If don't have data in that slot
                     pill_channel_btn.setStyleSheet("background-color : #97C7F9")
-                    pill_channel_btn.setIcon(QtGui.QIcon('/home/klongyaa1/Desktop/GUI-Klongyaa_senior-project-main/shared/images/plus_icon.png'))
+                    pill_channel_btn.setIcon(QtGui.QIcon('/home/pi/Desktop/GUI-Klongyaa_senior-project-main/shared/images/plus_icon.png'))
                     pill_channel_btn.setIconSize(QtCore.QSize(60, 60))
 
     def checkTakePillThread(self, pill_channel_buttons, pill_channel_datas):

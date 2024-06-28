@@ -292,13 +292,13 @@ class DetailScreen(QtWidgets.QDialog):
 "")
         self.no_channel.setAlignment(QtCore.Qt.AlignCenter)
         self.no_channel.setObjectName("no_channel")
-        self.button_edit_pill_data = QtWidgets.QPushButton(background_detail_screen)
-        self.button_edit_pill_data.setGeometry(QtCore.QRect(680, 10, 75, 75))
-        self.button_edit_pill_data.setIconSize(QtCore.QSize(68, 68))
-        self.button_edit_pill_data.setIcon(QtGui.QIcon('/home/pi/Desktop/GUI-Klongyaa_senior-project-main/shared/images/edit.png'))
-        self.button_edit_pill_data.setStyleSheet("background-color: #24BD73; border-radius: 35px;")
-        self.button_edit_pill_data.setObjectName("button_edit_pill_data")
-        self.button_edit_pill_data.clicked.connect(self.goToEditPage)
+        # self.button_edit_pill_data = QtWidgets.QPushButton(background_detail_screen)
+        # self.button_edit_pill_data.setGeometry(QtCore.QRect(680, 10, 75, 75))
+        # self.button_edit_pill_data.setIconSize(QtCore.QSize(68, 68))
+        # self.button_edit_pill_data.setIcon(QtGui.QIcon('/home/pi/Desktop/GUI-Klongyaa_senior-project-main/shared/images/edit.png'))
+        # self.button_edit_pill_data.setStyleSheet("background-color: #24BD73; border-radius: 35px;")
+        # self.button_edit_pill_data.setObjectName("button_edit_pill_data")
+        # self.button_edit_pill_data.clicked.connect(self.goToEditPage)
 
         self.button_delete_pill_channel = QtWidgets.QToolButton(background_detail_screen)
         self.button_delete_pill_channel.setGeometry(QtCore.QRect(445, 400, 220, 75))
@@ -327,9 +327,10 @@ class DetailScreen(QtWidgets.QDialog):
     def deletePillData(self):
         id = self.pill_channel_data["id"]
         res = requests.post(__main__.config["url"] + "/pill-data/deletePillChannelData/", json={
-            "channelID": str(self.pill_channel_data["id"] + 1),
+            "channelID": str(self.pill_channel_data["id"]),
             "lineUID": __main__.config["userId"]
             })
+        print(res)
         
         print('from delete pill data in main_detail_screen.py')
         __main__.pill_channel_datas[str(id)] = {}
@@ -357,7 +358,7 @@ class DetailScreen(QtWidgets.QDialog):
 
         self.button_go_back.setText(_translate("background_detail_screen", "ย้อนกลับ"))
         self.button_delete_pill_channel.setText(_translate("background_detail_screen", "ลบ"))
-        self.button_edit_pill_data.setText(_translate("background_detail_screen", "🖉"))
+        # self.button_edit_pill_data.setText(_translate("background_detail_screen", "🖉"))
 
         self.no_channel.setText(_translate("background_detail_screen", channelNotext))
     def goBack(self) :

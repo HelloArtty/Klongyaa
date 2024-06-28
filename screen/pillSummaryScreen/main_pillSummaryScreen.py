@@ -8,6 +8,8 @@ from PyQt5.QtGui import QMovie
 from PyQt5.QtCore import QTimer
 from screen.inputPillNameScreen.gen.gen_input_voice_screen_again import *
 
+import requests
+
 import __main__
 
 globalPillData = {}
@@ -34,7 +36,6 @@ class PillSummaryScreen(QDialog):
 
         if globalPillData["totalPills"] > 0 :
                 self.button_edit_total_pills.clicked.connect(lambda:self.editPillName("total_pills"))
-    
     #หน้าสรุป
     def setupUi(self, background_summary_screen):
         global globalPillData
@@ -263,6 +264,15 @@ class PillSummaryScreen(QDialog):
         #----------- SAVE AND THEN GO TO HOME SCREEN -----------#
         global globalPillData
         success_save_screen = SuccessSaveScreen(globalPillData)
+        res = requests.post(__main__.config["url"] + "/pill-data/addPillChannelData", json={
+                "channelID": str(globalPillData["id"]),
+                "pillName": globalPillData["name"],
+                "pillsPerTime": globalPillData["pillsPerTime"],
+                "stock": str(globalPillData["totalPills"]),
+                "takeTimes": globalPillData["timeToTake"],
+                "total": str(globalPillData["totalPills"]),
+                "lineID": __main__.config["userId"]           
+        })
         # self.ui.text_screen_name.setText("Home screen")
         __main__.widget.removeWidget(self)
         __main__.widget.addWidget(success_save_screen)
@@ -285,7 +295,7 @@ class PillSummaryScreen(QDialog):
         __main__.widget.setCurrentIndex(__main__.widget.currentIndex()+1)
 
 
-# ########### WAVE LOADING SCREEN ############ fix
+# ########### WAVE LOADING SCREEN ############
 class LoadingVoiceScreen(QDialog):
     def __init__(self, nextPage):
         super().__init__()
@@ -340,7 +350,7 @@ class LoadingVoiceScreen(QDialog):
         __main__.widget.setCurrentIndex(__main__.widget.currentIndex()+1)
 
 
-# ########### INPUT PILL NAME FLOW CLASS ############ fix
+# ########### INPUT PILL NAME FLOW CLASS ############
 class InputPillNameScreen(QDialog):
     def __init__(self, pillData):
         super().__init__()
@@ -401,7 +411,6 @@ class InputPillNameScreen(QDialog):
 
 import screen.inputPillNameScreen.gen.mic_icon
 
-# ########### ConfirmPillNameScreen CLASS ############ fix
 class ConfirmPillNameScreen(QDialog):
     def __init__(self, inputPillName):
         super().__init__()
@@ -475,7 +484,6 @@ class ConfirmPillNameScreen(QDialog):
         __main__.widget.addWidget(input_voice_again)
         __main__.widget.setCurrentIndex(__main__.widget.currentIndex()+1)
 
-# ########### InputVoiceAgain CLASS ############ fix
 class InputVoiceAgain(QDialog):
     def __init__(self):
         super().__init__()
@@ -523,7 +531,7 @@ class InputVoiceAgain(QDialog):
         __main__.widget.setCurrentIndex(__main__.widget.currentIndex()+1)
 
 
-# ########### INPUT TOTAL PILL FLOW CLASS ############ fix
+# ########### INPUT TOTAL PILL FLOW CLASS ############
 class TotalPillsScreen(QDialog):
     def __init__(self):
         super().__init__()
@@ -603,7 +611,7 @@ class TotalPillsScreen(QDialog):
             __main__.widget.setCurrentIndex(__main__.widget.currentIndex()+1)
 
 
-# ########### INPUT PILLS PER TIME FLOW CLASS ############ fix
+# ########### INPUT PILLS PER TIME FLOW CLASS ############
 class AmountPillPerTimeScreen(QDialog):
     def __init__(self):
         super().__init__()
@@ -689,8 +697,8 @@ if __name__ == "__main__":
      widget = QtWidgets.QStackedWidget()
      widget.setWindowTitle("GUI - KLONG_YAA")
      widget.addWidget(screen)
-     widget.setFixedWidth(800)
-     widget.setFixedHeight(480)
+     widget.setFixedWidth(1024)
+     widget.setFixedHeight(600)
      widget.show()
      sys.exit(app.exec_())	
 try:

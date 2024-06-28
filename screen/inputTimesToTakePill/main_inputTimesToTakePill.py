@@ -261,7 +261,7 @@ class AddSummaryTimeScreen(QDialog):
 
             timeToTakePillEditButton = QtWidgets.QToolButton(self.scrollAreaWidgetContents)
             timeToTakePillEditButton.setIconSize(QtCore.QSize(68, 68))
-            timeToTakePillEditButton.setIcon(QtGui.QIcon('/home/pi/Desktop/GUI-Klongyaa_senior-project-main/shared/images/edit.png'))
+            timeToTakePillEditButton.setIcon(QtGui.QIcon('/home/klongyaa1/Desktop/GUI-Klongyaa-seniorProject/shared/images/edit2.png'))
             timeToTakePillEditButton.setStyleSheet("background-color : rgb(255, 74, 74); border-radius: 35px;")
     
             timeToTakePillEditButton.setObjectName("button_edit_time_" + str(objIndex))
