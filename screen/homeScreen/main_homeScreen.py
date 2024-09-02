@@ -1,32 +1,31 @@
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QDialog
-import __main__
-import sys
 import os
-sys.path.append(os.path.abspath('/home/klongyaa1/Desktop/GUI-Klongyaa-seniorProject'))
+import sys
 
-from screen.inputPillNameScreen.main_inputPillnameScreen import InputPillNameScreen
-from screen.pillDetailScreen.main_detail_screen import DetailScreen
-from functools import partial
+import __main__
+from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtWidgets import QDialog, QListWidget, QListWidgetItem, QVBoxLayout
 
-from PyQt5.QtCore import QObject, QThread, pyqtSignal
-from time import sleep
-from datetime import datetime, timedelta
-import requests
+sys.path.append(os.path.abspath('../klongyaa/Klongyaa'))
 
 import threading
 import time
-from pygame import mixer
+from datetime import datetime, timedelta
+from functools import partial
+from time import sleep
 
+import requests
 from linebot import LineBotApi
 from linebot.models import TextMessage
-
-from screen.homeScreen.ldr import get_first_load_value, pick_pill_detection
+from pygame import mixer
+from PyQt5.QtCore import QObject, QThread, pyqtSignal
+# from screen.homeScreen.ldr import get_first_load_value, pick_pill_detection
+from screen.inputPillNameScreen.main_inputPillnameScreen import PillNameScreen
+from screen.pillDetailScreen.main_detail_screen import DetailScreen
 
 isChangePage = False
 isSoundOn = False
 mixer.init()
-sound_notification = mixer.Sound("/home/klongyaa1/Desktop/GUI-Klongyaa-seniorProject/screen/homeScreen/sound_notification.wav")
+sound_notification = mixer.Sound("../klongyaa/Klongyaa/screen/homeScreen/sound_notification.wav")
 print(sound_notification)
  #---------------- Function play sound notification ----------------#
 def releaseCooldown():
@@ -123,9 +122,8 @@ class HomeScreen(QDialog):
         # Set data to every channel of pill
         for index in range(8) :
             pill_channel_btn = QtWidgets.QPushButton(
-                UIHomeScreen, 
-            )   
-
+                UIHomeScreen,
+            )
             pill_channel_btn.clicked.connect(partial(self.gotoPillDetailScreen, index, pill_channel_datas[str(index)]))
 
             pill_channel_btn.setGeometry(QtCore.QRect(
@@ -148,7 +146,7 @@ class HomeScreen(QDialog):
             else :
                 # If don't have data in that slot
                 pill_channel_btn.setStyleSheet("background-color : #97C7F9 ")
-                pill_channel_btn.setIcon(QtGui.QIcon('/home/klongyaa1/Desktop/GUI-Klongyaa-seniorProject/shared/images/plus_icon.png'))
+                pill_channel_btn.setIcon(QtGui.QIcon('../shared/images/plus_icon.png'))
                 pill_channel_btn.setIconSize(QtCore.QSize(60, 60))
 
             pill_channel_buttons.append(pill_channel_btn)
@@ -185,7 +183,7 @@ class HomeScreen(QDialog):
 
         self.checkTakePillThread(pill_channel_buttons, pill_channel_datas)
 
-    def gotoPillDetailScreen(self, channelID, pill_channel_data):
+    def gotoPillDetailScreen(self, channelID, pill_channel_data, parent_window):
         global isChangePage
         isChangePage = True
 
@@ -205,57 +203,67 @@ class HomeScreen(QDialog):
                 detailScreen = DetailScreen(pill_channel_data)
                 __main__.widget.addWidget(detailScreen)
                 __main__.widget.setCurrentIndex(__main__.widget.currentIndex() + 1)
-        else :
+        else:
             flag = 0
-            for item in __main__.haveToTake :
-                if item["isTaken"] == False :
+            for item in __main__.haveToTake:
+                if item["isTaken"] == False:
                     flag = 1
-            
+
             if flag == 0:
                 pillData = {
-                    "id" : channelID,
+                    "id": channelID,
                     "name": "",
-                    "totalPills": -1,
-                    "pillsPerTime": -1,
+                    "totalPills": "",
+                    "pillsPerTime": "",
                     "timeToTake": []
                 }
-                voiceInputScreen = InputPillNameScreen(pillData)
-                __main__.widget.addWidget(voiceInputScreen)
+                
+                #รายการชื่อยา
+                pill_names = ["โปรดเลือกชื่อยา","Metformin", "Glimepiride", "Gliclazide", "Glibenclamide", "Repaglinide",
+                              "Nateglinide", "Pioglitazone", "Rosiglitazone", "Sitagliptin", "Vildagliptin",
+                              "Saxagliptin", "Linagliptin", "Alogliptin", "Dapagliflozin", "Canagliflozin",
+                              "Empagliflozin", "Liraglutide", "Dulaglutide", "Semaglutide", "Insulin"]
+
+                # สร้างหน้าจอการเลือกชื่อยา
+                InputScreen = PillNameScreen(pillData, pill_names)
+                print("\n ไปหน้าเพิ่มชื่อยา \n")
+                __main__.widget.addWidget(InputScreen)
                 __main__.widget.setCurrentIndex(__main__.widget.currentIndex() + 1)
     
-    def ledLightFunction(self, index) :
-        alreadyTake = False
-        for no, item in enumerate(__main__.haveToTake) :
-            if item["id"] == no and item["isTaken"]:
-                alreadyTake = True
+    # def ledLightFunction(self, index) :
+    #     alreadyTake = False
+    #     for no, item in enumerate(__main__.haveToTake) :
+    #         if item["id"] == no and item["isTaken"]:
+    #             alreadyTake = True
                 
-        light = __main__.lightList[str(index)]
-        if light["dout"] != -1 and light["pdPin"] != -1 and not alreadyTake:
-        # if True:
-            if light["firstWeightValue"] == -1:
-                dout = __main__.lightList[str(index)]["dout"]
-                pdPin = __main__.lightList[str(index)]["pdPin"]
-                value = get_first_load_value(dout,pdPin) # Don't forget to adding this Register Pin parameter
-                __main__.lightList[str(index)]["firstWeightValue"] = value
-            firstWeightValue = __main__.lightList[str(index)]["firstWeightValue"]
-            dout = __main__.lightList[str(index)]["dout"]
-            pdPin = __main__.lightList[str(index)]["pdPin"]
-            led = __main__.lightList[str(index)]["led"]
-            isLightOn = pick_pill_detection(firstWeightValue, dout, pdPin, led) # Don't forget to adding this Register Pin parameter
-            if not isLightOn :
-                stopSound()
-                __main__.lightList[str(index)]["firstLightValue"] = -1
-                print("Not light on")
-                for no, item in enumerate(__main__.haveToTake) :
-                    if item["id"] == index :
-                        __main__.haveToTake[no]["isTaken"] = True
-                        res = requests.post(__main__.config["url"] + "/pill-data/addLogHistory", json={
-                                "channelID": str(item["id"]),
-                                "lineUID": __main__.config["userId"],
-                                "task": "Take pill"
-                                })
-                        print(f'res : {res}')
-                        print('Take pill')
+    #     light = __main__.lightList[str(index)]
+    #     if light["dout"] != -1 and light["pdPin"] != -1 and not alreadyTake:
+    #     # if True:
+    #         if light["firstWeightValue"] == -1:
+    #             dout = __main__.lightList[str(index)]["dout"]
+    #             pdPin = __main__.lightList[str(index)]["pdPin"]
+    #             value = get_first_load_value(dout,pdPin) # Don't forget to adding this Register Pin parameter
+    #             __main__.lightList[str(index)]["firstWeightValue"] = value
+    #         firstWeightValue = __main__.lightList[str(index)]["firstWeightValue"]
+    #         dout = __main__.lightList[str(index)]["dout"]
+    #         pdPin = __main__.lightList[str(index)]["pdPin"]
+    #         led = __main__.lightList[str(index)]["led"]
+    #         isLightOn = pick_pill_detection(firstWeightValue, dout, pdPin, led) # Don't forget to adding this Register Pin parameter
+    #         if not isLightOn :
+    #             stopSound()
+    #             __main__.lightList[str(index)]["firstLightValue"] = -1
+    #             print("Not light on")
+    #             for no, item in enumerate(__main__.haveToTake) :
+    #                 if item["id"] == index :
+    #                     __main__.haveToTake[no]["isTaken"] = True
+    #                     res = requests.post(__main__.config["url"] + "/pill-data/addLogHistory", json={
+    #                             "channelID": str(item["id"]),
+    #                             "lineUID": __main__.config["userId"],
+    #                             "task": "Take pill"
+    #                             })
+    #                     print(f'res : {res}')
+    #                     print('Take pill')
+
 
     def checkTakePill(self, n, pill_channel_buttons, pill_channel_datas) :
         for index in range(8) :
@@ -302,8 +310,8 @@ class HomeScreen(QDialog):
 
                             # If user are not already take that pill
                             # ถ้ายังไม่ได้หยิบยา
-                            if not alreadyTakeFlag :
-                                self.ledLightFunction(index)
+                            # if not alreadyTakeFlag :
+                            #     self.ledLightFunction(index)
 
                                 global isSoundOn
                                 if not isSoundOn :
@@ -389,7 +397,7 @@ class HomeScreen(QDialog):
                 else :
                     # If don't have data in that slot
                     pill_channel_btn.setStyleSheet("background-color : #97C7F9")
-                    pill_channel_btn.setIcon(QtGui.QIcon('/home/pi/Desktop/GUI-Klongyaa_senior-project-main/shared/images/plus_icon.png'))
+                    pill_channel_btn.setIcon(QtGui.QIcon('../shared/images/plus_icon.png'))
                     pill_channel_btn.setIconSize(QtCore.QSize(60, 60))
 
     def checkTakePillThread(self, pill_channel_buttons, pill_channel_datas):

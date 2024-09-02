@@ -1,5 +1,6 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+
 class Ui_input_voice(object):
     def setupUi(self, background_input_pil_name):
         background_input_pil_name.setObjectName("background_input_pil_name")
@@ -55,9 +56,10 @@ class Ui_input_voice(object):
         self.question_input_voice.setText(_translate("background_input_pil_name", "ดำเนินการกดปุ่ม \n"
 " เพื่อพูดชื่อยาของท่าน"))
 
-import sys
 import os
-sys.path.append(os.path.abspath('/home/klongyaa1/Desktop/GUI-Klongyaa-seniorProject/screen'))
+import sys
+
+sys.path.append(os.path.abspath('../klongyaa/Klongyaa/screen'))
 
 import inputPillNameScreen.gen.mic_icon
 

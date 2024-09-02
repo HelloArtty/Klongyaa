@@ -1,15 +1,20 @@
+import json
 import sys
+
 import requests
 import speech_recognition as sr
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QApplication, QStackedWidget, QDialog, QDialogButtonBox, QLabel, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout, QGridLayout
+from PyQt5.QtWidgets import (QApplication, QDialog, QDialogButtonBox,
+                             QGridLayout, QHBoxLayout, QLabel, QLineEdit,
+                             QPushButton, QStackedWidget, QVBoxLayout)
 from screen.homeScreen.main_homeScreen import HomeScreen
 from screen.inputTimesToTakePill.main_inputTimesToTakePill import *
 from screen.pillSummaryScreen.main_pillSummaryScreen import PillSummaryScreen
+# from shared.data.light_list import lightList
 from shared.data.mock.config import config
-from shared.data.light_list import lightList
 
-config_path = "/home/klongyaa1/Desktop/GUI-Klongyaa-seniorProject/shared/data/mock/config.py"
+# config_path = "../Klongyaa/shared/data/mock/config.py"
+config_path = "D:/klongyaa/Klongyaa/shared/data/mock/config.py"
 
 haveToTake = []
 
@@ -40,89 +45,6 @@ def save_userId(userId):
                 file.write(f'    "userId": "{userId}",\n')
             else:
                 file.write(line)
-
-# def show_confirmation_dialog(user_id):
-#     dialog = QDialog()
-#     dialog.setWindowTitle("Confirm")
-#     dialog.resize(800, 480)
-#     dialog.setStyleSheet("background-color : #97C7F9 ")
-
-#     layout = QVBoxLayout()
-
-#     label = QLabel(f"รหัสของคุณคือ<br><font color='red'>{user_id}</font><br>กรุณาตรวจสอบให้เรียบร้อยก่อนกดยืนยัน")
-#     label.setStyleSheet("font-size: 34px; font-weight: bold; text-align: center;")
-#     label.setAlignment(QtCore.Qt.AlignCenter)
-#     layout.addWidget(label)
-
-#     buttonBox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-#     buttonBox.setStyleSheet(
-#         '''
-#         QPushButton {
-#             font: 75 36pt "JasmineUPC";
-#             font-size: 24px;
-#             padding: 10px;
-#             color: #ffffff;
-#             border-radius: 5px;
-#             width: 150px;
-#             height: 40px;
-#         }
-#         QPushButton:hover {
-#             background-color: #24BD73;
-#         }
-#         QPushButton:enabled {
-#             background-color: #23B36D;
-#             border: 2px solid #2E8B57;
-#         }
-#         QPushButton#button_incorrect_pill_name {
-#             background-color: #DD5D5D;
-#             border-radius: 20px;
-#         }
-#         QPushButton#button_incorrect_pill_name:hover {
-#             background-color: rgb(255, 50, 50);
-#             border-radius: 20px;
-#         }
-#         '''
-#     )
-
-#     # Get the Ok and Cancel buttons
-#     ok_button = buttonBox.button(QDialogButtonBox.Ok)
-#     ok_button.setText("ยืนยัน")
-#     ok_button.setMinimumWidth(150)
-#     ok_button.setStyleSheet(
-#         '''
-#         QPushButton:hover {
-#             background-color: #24BD73;
-#         }
-#         '''
-#     )
-
-#     cancel_button = buttonBox.button(QDialogButtonBox.Cancel)
-#     cancel_button.setText("ย้อนกลับ")
-#     cancel_button.setMinimumWidth(150)
-#     cancel_button.setStyleSheet(
-#         '''
-#         QPushButton {
-#             font: 75 36pt "JasmineUPC";
-#             font-size: 24px;
-#             padding: 10px;
-#             color: #ffffff;
-#             border-radius: 5px;
-#             width: 150px;
-#             height: 40px;
-#             background-color: #DD5D5D;
-#             border: 2px solid #B22222;
-#         }
-#         QPushButton:hover {
-#             background-color: #FF3232;
-#         }
-#         '''
-#     )
-
-#     layout.addWidget(buttonBox, alignment=QtCore.Qt.AlignCenter)
-#     dialog.setLayout(layout)
-
-#     result = dialog.exec_()
-#     return result
 
 def show_confirmation_dialog(user_id):
     dialog = QDialog()
@@ -205,7 +127,6 @@ def show_confirmation_dialog(user_id):
     result = dialog.exec_()
     return result
 
-
 def show_error_dialog(message):
     dialog = QDialog()
     dialog.setWindowTitle("Error")
@@ -245,19 +166,34 @@ def show_error_dialog(message):
     dialog.setLayout(layout)
     dialog.exec_()
 
+def get_line_id_from_backend(username):
+    try:
+        url = config["url"] + "/user/pillboxLogin/" + str(username)
+        response = requests.get(url)
+        print(f"Response object: {response}")
+        if response.status_code == 200:
+            data = response.json()
+            print(f"Data received: {data} \n")
+            return data.get("lineID")
+        else:
+            print(f"Error: Unable to fetch lineID, status code: {response.status_code}")
+            return None
+    except Exception as e:
+        print(f"Exception occurred: {e}")
+        return None
 
 def check_and_update_user_id():
     global config
 
     while not config['userId']:
         dialog = QDialog()
-        dialog.setWindowTitle("User ID")
+        dialog.setWindowTitle("Username")
         dialog.resize(800, 480)
         dialog.setStyleSheet("background-color : #97C7F9 ")
 
         layout = QVBoxLayout()
 
-        label = QLabel("กรุณากรอกรหัสของคุณ")
+        label = QLabel("กรุณากรอกชื่อผู้ใช้ของคุณ")
         label.setStyleSheet("font-size: 34px; font-weight: bold; margin-bottom: 20px; text-align: center;")
         label.setAlignment(QtCore.Qt.AlignCenter)
         layout.addWidget(label)
@@ -366,23 +302,24 @@ def check_and_update_user_id():
         dialog.setLayout(layout)
 
         if dialog.exec_() == QDialog.Accepted:
-            user_id = edit.text()
-            if user_id:
-                if show_confirmation_dialog(user_id) == QDialog.Accepted:
-                    save_userId(user_id)
-                    config['userId'] = user_id
+            username = edit.text()
+            if username:
+                lineID = get_line_id_from_backend(username)
+                if lineID:
+                    if show_confirmation_dialog(lineID) == QDialog.Accepted:
+                        save_userId(lineID)
+                        config['userId'] = lineID
+                    else:
+                        continue
                 else:
-                    continue
-            elif user_id == "":
-                show_error_dialog("User ID cannot be empty!")
+                    show_error_dialog("ไม่สามารถรับ User ID จากระบบได้!")
             else:
-                show_error_dialog("User ID is required!")
+                show_error_dialog("กรุณากรอกชื่อผู้ใช้!")
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    
     check_and_update_user_id()
-
+    
     pill_channel_datas = {
         "0": {},
         "1": {},
@@ -393,24 +330,28 @@ if __name__ == "__main__":
         "6": {}, 
         "7": {}
     }
-    res = requests.get(config["url"] + "/pill-data/getHardwarePillChannelDatas/" + config["userId"])
-    print(config["url"])
-    print(config["userId"])
-    print(config["isFirstUse"])
-    print(res)
+    url = config["url"] + "/user/hardwareGetPillChannels/" + config["userId"]
+    res = requests.get(url)
+    print(f"Request URL: {url} \n")
     
-    for pill in res.json()['pill_channel_datas']:
-        times = []
-        for time in pill['take_times']:
-            times.append(time.replace('.', ':'))
-        idStr = str(int(pill['channel_id']) )
-        pill_channel_datas[idStr]['id'] = int(idStr)
-        pill_channel_datas[idStr]['name'] = pill['pill_name']
-        pill_channel_datas[idStr]['totalPills'] = pill['total']
-        pill_channel_datas[idStr]['pillsPerTime'] = pill['pillsPerTime']
-        pill_channel_datas[idStr]['timeToTake'] = times
-
-    print(pill_channel_datas)
+    
+    json_response = res.json()
+    # print(f"JSON Response: {json_response} \n")
+    
+    if isinstance(json_response, list):
+        for pill in json_response:
+            id_str = str(int(pill.get('channelIndex', 0)))
+            print(f"Adding pill with id_str: {id_str}")
+            pill_channel_datas[id_str] = {
+                'id': int(id_str),
+                'name': pill.get('medicine', {}).get('name', ''),
+                'totalPills': pill.get('Total', 0),
+                'pillsPerTime': pill.get('amountPerTime', 0),
+                'timeToTake': [time.get('time', '').replace('.', ':') for time in pill.get('times', [])]
+            }
+    
+    # แสดงผลลัพธ์
+    print(f"Pill Channel Data: {json.dumps(pill_channel_datas, indent=4)}")
     defaultfont = QtGui.QFont('Arial', 8)
     defaultfont.setPixelSize(8)
     QtWidgets.QApplication.setStyle("Windows")
