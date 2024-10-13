@@ -25,7 +25,7 @@ from screen.pillDetailScreen.main_detail_screen import DetailScreen
 isChangePage = False
 isSoundOn = False
 mixer.init()
-sound_notification = mixer.Sound("../klongyaa/Klongyaa/screen/homeScreen/sound_notification.wav")
+sound_notification = mixer.Sound("../Klongyaa/screen/homeScreen/sound_notification.wav")
 print(sound_notification)
  #---------------- Function play sound notification ----------------#
 def releaseCooldown():

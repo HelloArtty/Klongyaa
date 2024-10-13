@@ -1,5 +1,6 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+
 class Ui_input_voice_again(object):
     def setupUi(self, bankground_input_voice_again):
         bankground_input_voice_again.setObjectName("bankground_input_voice_again")
@@ -44,10 +45,11 @@ class Ui_input_voice_again(object):
         bankground_input_voice_again.setWindowTitle(_translate("bankground_input_voice_again", "Dialog"))
         self.question_of_input_voice_again.setText(_translate("bankground_input_voice_again", "กรุณาพูดชื่อยาอีกครั้ง"))
 
-import sys
 import os
+import sys
+
 sys.path.append(os.path.abspath('/home/klongyaa1/Desktop/GUI-Klongyaa-seniorProject/screen'))
-import inputPillNameScreen.gen.mic_icon
+
 
 if __name__ == "__main__":
     import sys

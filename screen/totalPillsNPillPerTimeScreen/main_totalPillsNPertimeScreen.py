@@ -85,7 +85,6 @@ class TotalPillsScreen(QDialog):
         self.text_question_inputting_total_pills.setText(_translate("background_total_pills", "กรุณาระบุจำนวนเม็ดยาทั้งหมดที่จะบรรจุ"))
         self.button_save_total_pills.setText(_translate("background_total_pills", "ถัดไป"))
 
-            
     def updateSliderTotalPills(self,count_of_total_pills):
         self.lcdNumber.display(count_of_total_pills)
         self.total_pills = count_of_total_pills
@@ -188,12 +187,10 @@ class AmountPillPerTimeScreen(QDialog):
         self.text_question_amount_pill_per_time.setText(_translate("background_amount_pill_per_time", "กรุณาระบุจำนวนยาที่ต้องทานในแต่ละมื้อ"))
         self.button_next.setText(_translate("background_amount_pill_per_time", "ถัดไป"))
 
-    #======================= define function : update slibar =======================#
     def updateSliderPillPerTime(self,amount_of_pill_per_time):
         self.lcdNumberPillPerTime.display(amount_of_pill_per_time)
         # print("[amount of pill per time] : ",amount_of_pill_per_time)
         self.amount_pill =  amount_of_pill_per_time
-        #======================= add amount pill per time data to array object =======================#
 
     def gotoInputTimesToTakePill(self):
         if hasattr(self, 'amount_pill') :
@@ -207,3 +204,4 @@ class AmountPillPerTimeScreen(QDialog):
             __main__.widget.removeWidget(self)
             __main__.widget.addWidget(input_times_to_take_pill_screen)
             __main__.widget.setCurrentIndex(__main__.widget.currentIndex()+1)
+            

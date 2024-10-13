@@ -93,7 +93,6 @@ class PillNameScreen(QDialog):
         self.button_correct_pill_name.setObjectName("button_correct_pill_name")
         self.button_correct_pill_name.clicked.connect(self.goToMainTotalPillsNPertimeScreen)
 
-
         self.retranslateUi(background_confirm_pill_name)
         QtCore.QMetaObject.connectSlotsByName(background_confirm_pill_name)
         

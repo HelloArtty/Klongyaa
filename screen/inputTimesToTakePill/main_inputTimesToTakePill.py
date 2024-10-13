@@ -8,9 +8,6 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QTimer
 from PyQt5.QtGui import QMovie
 from PyQt5.QtWidgets import QDialog
-from screen.inputPillNameScreen.gen.gen_input_voice_screen import *
-from screen.inputPillNameScreen.gen.gen_input_voice_screen_again import *
-from screen.inputPillNameScreen.gen.gen_voice_loading_screen import *
 
 globalTimesToTakePillArr = []
 globalPillData = {}
@@ -234,7 +231,7 @@ class AddSummaryTimeScreen(QDialog):
 
             timeToTakePillEditButton = QtWidgets.QToolButton(self.scrollAreaWidgetContents)
             timeToTakePillEditButton.setIconSize(QtCore.QSize(68, 68))
-            timeToTakePillEditButton.setIcon(QtGui.QIcon('../klongyaa/Klongyaa/shared/images/edit2.png'))
+            timeToTakePillEditButton.setIcon(QtGui.QIcon('../Klongyaa/shared/images/edit2.png'))
             timeToTakePillEditButton.setStyleSheet("background-color : rgb(255, 74, 74); border-radius: 35px;")
     
             timeToTakePillEditButton.setObjectName("button_edit_time_" + str(objIndex))
@@ -301,8 +298,15 @@ class AddSummaryTimeScreen(QDialog):
         globalPillData["timeToTake"] = globalTimesToTakePillArr
         print("\n ไปหน้าสรุป \n")
         print(json.dumps(globalPillData, indent=4))
-
-        add_summary_time_screen = __main__.PillSummaryScreen(globalPillData)
+        
+        pill_names = [
+    "โปรดเลือกชื่อยา", "Metformin", "Glimepiride", "Gliclazide", "Glibenclamide", 
+    "Repaglinide", "Nateglinide", "Pioglitazone", "Rosiglitazone", "Sitagliptin", 
+    "Vildagliptin", "Saxagliptin", "Linagliptin", "Alogliptin", "Dapagliflozin", 
+    "Canagliflozin", "Empagliflozin", "Liraglutide", "Dulaglutide", "Semaglutide", 
+    "Insulin"
+]
+        add_summary_time_screen = __main__.PillSummaryScreen(globalPillData, pill_names)
         __main__.widget.removeWidget(self)
         __main__.widget.addWidget(add_summary_time_screen)
         __main__.widget.setCurrentIndex(__main__.widget.currentIndex()+1)
