@@ -1,13 +1,13 @@
 # Klongyaa Senior Project
 
 ## Overview
-Klongyaa is a senior project aimed at helping elderly people manage their medication schedules. The application provides reminders for taking pills, sends notifications via LINE, and allows caregivers to monitor the medication intake.
+Klongyaa is a project designed to help elderly people manage their medication schedules. The app provides reminders for taking pills, sends notifications via LINE, and allows caregivers to monitor medication intake.
 
 ## Features
 - **Pill Reminders**: Notify users when it's time to take their medication.
 - **LINE Notifications**: Send notifications to caregivers if the user misses a dose.
-- **Pill Management**: Add, edit, and delete pill information.
-- **User-Friendly Interface**: Easy-to-use interface designed for elderly users.
+- **Pill Management**: Add and delete pill information.
+
 
 ## Installation
 
@@ -22,7 +22,7 @@ Klongyaa is a senior project aimed at helping elderly people manage their medica
 ### Setup
 1. Clone the repository:
     ```sh
-    git clone https://github.com/HelloArtty/Klongyaa.git
+    git clone https://github.com/yourusername/Klongyaa.git
     cd Klongyaa
     ```
 
@@ -30,6 +30,7 @@ Klongyaa is a senior project aimed at helping elderly people manage their medica
     ```sh
     pip install -r requirements.txt
     ```
+
 
 ## Usage
 1. Run the main application:
@@ -40,38 +41,57 @@ Klongyaa is a senior project aimed at helping elderly people manage their medica
 2. Follow the on-screen instructions to navigate through the application.
 
 ## Project Structure
-- `Klongyaa/`
-  - `screen/`
-    - `homeScreen/`
-      - `main_homeScreen.py`: Main screen of the application.
-      - `ui/`: Contains UI files for the home screen.
-    - `inputPillNameScreen/`
-      - `main_inputPillnameScreen.py`: Screen for inputting pill names.
-      - `ui/`: Contains UI files for the input pill name screen.
-    - `pillDetailScreen/`
-      - `main_detail_screen.py`: Screen for displaying pill details.
-      - `ui/`: Contains UI files for the pill detail screen.
-    - `pillSummaryScreen/`
-      - `main_summary_screen.py`: Screen for displaying pill summary.
-      - `ui/`: Contains UI files for the pill summary screen.
-    - `tutorialHomeScreen/`
-      - `main_tutorial_screen.py`: Screen for displaying tutorial.
-      - `ui/`: Contains UI files for the tutorial screen.
-  - `shared/`
-    - `data/`
-      - `mock/`: Contains mock data for testing.
-    - `images/`: Contains images used in the application.
-  - `main.py`: Entry point of the application.
-  - `requirements.txt`: List of required libraries.
 
-## Contributing
-1. Fork the repository.
-2. Create a new branch (`git checkout -b feature-branch`).
-3. Make your changes.
-4. Commit your changes (`git commit -am 'Add new feature'`).
-5. Push to the branch (`git push origin feature-branch`).
-6. Create a new Pull Request.
+- **Klongyaa/**: Main project folder
+  - **screen/**: Contains files for different screens of the application
+    - **homeScreen/**: 
+      - `main_homeScreen.py`: Main screen showing the list of pills and options to view details or add new pills
+    - **inputPillNameScreen/**: 
+      - `main_inputPillnameScreen.py`: Screen for entering a new pill name
+    - **pillDetailScreen/**: 
+      - `main_detail_screen.py`: Displays pill details including name, dosage, and times to take
+    - **pillSummaryScreen/**: 
+      - `main_summary_screen.py`: Shows a summary of all pills the user needs to take
+  - **shared/**: 
+    - **data/**: Data used for testing
+      - **mock/**: Mock data for testing
+        - **config/**: Application configuration files
+    - **images/**: Images used in the application
+  - **ldrsensor/**: Folder for sensor-related files
+  - **main.py**: Entry point of the application
+  - **requirements.txt**: List of required libraries
 
+## System Workflow
+
+### Home Screen
+- **File**: `main_homeScreen.py`
+- **Description**: The main screen where users can see the list of pills they need to take. It also provides options to navigate to the pill detail screen or input new pill information.
+
+### Pill Detail Screen
+- **File**: `main_detail_screen.py`
+- **Description**: Displays detailed information about a specific pill, including its name, dosage, and image. Users can edit or delete pill information from this screen.
+
+### Pill Summary Screen
+- **File**: `main_summary_screen.py`
+- **Description**: Provides a summary of all the pills the user needs to take. Users can save the summary or edit the details of each pill.
+
+### Input Pill Name Screen
+- **File**: `main_inputPillnameScreen.py`
+- **Description**: Allows users to input the name of a new pill. This screen is part of the process of adding a new pill to the system.
+
+### Tutorial Screen
+- **File**: `main_tutorial_screen.py`
+- **Description**: Provides a tutorial for new users on how to use the application.
+
+### Shared Components
+- **Directory**: `shared/`
+- **Description**: Contains shared resources such as images and mock data used across different screens.
+
+## Notifications
+- **LINE Notifications**: The application sends notifications via LINE to caregivers if the user misses a dose. This is handled using the `line-bot-sdk`.
+
+## Sound Notifications
+- **Sound Alerts**: The application uses `pygame` to play sound notifications when it's time to take a pill.
 
 ## Acknowledgements
 - PyQt5 for the GUI framework.

@@ -381,6 +381,7 @@ class DetailScreen(QtWidgets.QDialog):
         print("Del id = ",id)
         channelId = self.pill_channel_data["channelId"]
         print("Del channelId = ",channelId)
+        print("ลบช่องที่ = ",channelId + 1 )
         url = f"{__main__.config['url']}/user/deletePillChannel/{id}"
         res = requests.delete(url)
 
