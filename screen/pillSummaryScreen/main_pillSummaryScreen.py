@@ -6,8 +6,8 @@ import __main__
 import requests
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtWidgets import QApplication, QDialog, QWidget
-from screen.inputPillNameScreen.gen.gen_input_voice_screen_again import *
+from PyQt5.QtWidgets import QApplication, QDialog
+# from screen.inputPillNameScreen.gen.gen_input_voice_screen_again import *
 from screen.pillSummaryScreen.gen.gen_pill_summary_screen import *
 from screen.pillSummaryScreen.mock.pill_data import pill_data
 from shared.main_success_save_screen import SuccessSaveScreen
@@ -17,15 +17,17 @@ globalInputPillName = ""
 mockNum = 0
 
 class PillSummaryScreen(QDialog):
-    def __init__(self, pillData, pillNames):
-        super().__init__()
+    def __init__(self, pillData=None, pillNames=None, pillID=None, parent=None):
+        super().__init__(parent)
         global globalPillData
-        globalPillData = pillData
-        self.pillNames = pillNames
-
+        globalPillData = pillData if pillData is not None else {}
+        self.pillNames = pillNames if pillNames is not None else []
+        self.pillID = pillID if pillID is not None else []
+        self.inputPillName = globalPillData.get("name", "")
+        self.inputPillID = globalPillData.get("pillId", "")
         self.setupUi(self)
         self.button_save_pill_summary.clicked.connect(self.savePillSummary)
-        print(f"ข้อมูลยา = {globalPillData}")
+        # print(f"ข้อมูลยา = {globalPillData}")
         
         self.button_edit_pill_name.clicked.connect(self.editPillName)
         self.button_edit_amount_pill.clicked.connect(self.editAmountPill)
@@ -44,7 +46,6 @@ class PillSummaryScreen(QDialog):
 
     def editTime(self):
         self.editDetail("time")
-
 
     #หน้าสรุป
     def setupUi(self, background_summary_screen):
@@ -213,7 +214,7 @@ class PillSummaryScreen(QDialog):
         global globalPillData
         pillName = globalPillData["name"]
         pillsPerTime = str(globalPillData["pillsPerTime"]) + " เม็ด/มื้อ"
-        channelID = "ช่องที่ " + str(globalPillData["id"] + 1)
+        channelID = "ช่องที่ " + str(globalPillData["channelId"] + 1)
         
         background_summary_screen.setWindowTitle(_translate("background_summary_screen", "Dialog"))
         self.no_channel.setText(_translate("background_summary_screen", channelID))
@@ -225,26 +226,32 @@ class PillSummaryScreen(QDialog):
         self.button_save_pill_summary.setText(_translate("background_summary_screen", "บันทึก"))
     
     def savePillSummary(self):
-        #----------- SAVE AND THEN GO TO HOME SCREEN -----------#
         global globalPillData
         success_save_screen = SuccessSaveScreen(globalPillData)
-        res = requests.post(__main__.config["url"] + "/pill-data/addPillChannelData", json={
-                "channelID": str(globalPillData["id"]),
-                "pillName": globalPillData["name"],
-                "pillsPerTime": globalPillData["pillsPerTime"],
-                "stock": str(globalPillData["totalPills"]),
-                "takeTimes": globalPillData["timeToTake"],
-                "total": str(globalPillData["totalPills"]),
-                "lineID": __main__.config["userId"]
-        })
-        # self.ui.text_screen_name.setText("Home screen")
+        pill_data = {
+            "channelIndex": str(globalPillData["channelId"]),
+            "userID": __main__.config["userId"],
+            "medicineID": globalPillData["pillId"],
+            "amount": str(globalPillData["totalPills"]),
+            "total": str(globalPillData["totalPills"]),
+            "amountPerTime": globalPillData["pillsPerTime"],
+            "time": globalPillData["timeToTake"],
+        }
+
+        res = requests.post(__main__.config["url"] + "/user/addPillChannel", json=pill_data)
+
+        if res.status_code == 200:
+            print("โอเค")
+            __main__.refreshPillData()  # ส่งสัญญาณเมื่อข้อมูลถูกบันทึกสำเร็จ
+
         __main__.widget.removeWidget(self)
         __main__.widget.addWidget(success_save_screen)
-        __main__.widget.setCurrentIndex(__main__.widget.currentIndex()+1)
+        __main__.widget.setCurrentIndex(__main__.widget.currentIndex() + 1)
+    
 
     def editDetail(self, edit_mode):
         global globalPillData
-        print(f"Edit mode: {edit_mode}")
+        # print(f"Edit mode: {edit_mode}")
         screen = None
         
         if edit_mode == "pill_name":
@@ -262,20 +269,22 @@ class PillSummaryScreen(QDialog):
         if screen is not None:
             __main__.widget.addWidget(screen)
             __main__.widget.setCurrentIndex(__main__.widget.currentIndex() + 1)
-        else:
-            print(f"Error: No screen initialized for edit mode '{edit_mode}'")
+        # else:
+        #     print(f"Error: No screen initialized for edit mode '{edit_mode}'")
 
 
 # ########### ชื่อยา ############
 class PillNameScreen(QDialog):
     pill_name_entered_signal = pyqtSignal(str)
     
-    def __init__(self, pillData=None, pillNames=None, parent=None):
+    def __init__(self, pillData=None, pillNames=None, pillID=None, parent=None):
         super().__init__(parent)
         global globalPillData
         globalPillData = pillData if pillData is not None else {}
         self.pillNames = pillNames if pillNames is not None else []
+        self.pillID = pillID if pillID is not None else []
         self.inputPillName = globalPillData.get("name", "")
+        self.inputPillID = globalPillData.get("pillId", "")
         self.setupUi(self)
         self.save_button_pillname.clicked.connect(self.savePillName)
         
@@ -284,6 +293,7 @@ class PillNameScreen(QDialog):
         background_confirm_pill_name.setObjectName("background_confirm_pill_name")
         background_confirm_pill_name.resize(800, 480)
         background_confirm_pill_name.setStyleSheet("QWidget#background_confirm_pill_name { background-color: #97C7F9 }")
+        
         self.no_channel = QtWidgets.QLabel(background_confirm_pill_name)
         self.no_channel.setGeometry(QtCore.QRect(40, 30, 190, 70))
         font = QtGui.QFont()
@@ -296,6 +306,7 @@ class PillNameScreen(QDialog):
         self.no_channel.setStyleSheet("background-color: #C5E1FF; font: 75 36pt \"JasmineUPC\"; border-radius: 25px; color: #070021;")
         self.no_channel.setAlignment(QtCore.Qt.AlignCenter)
         self.no_channel.setObjectName("no_channel")
+        
         self.label_1 = QtWidgets.QLabel(background_confirm_pill_name)
         self.label_1.setGeometry(QtCore.QRect(245, 30, 350, 70))
         self.label_1.setStyleSheet("font: 34pt \"JasmineUPC\";")
@@ -311,7 +322,11 @@ class PillNameScreen(QDialog):
         
         # Set initial selection
         self.current_pill_index = 0
-        self.label_pill_name.setText(self.pillNames[self.current_pill_index])
+        if isinstance(self.pillNames, list) and len(self.pillNames) > 0:
+            self.label_pill_name.setText(self.pillNames[self.current_pill_index])
+        elif isinstance(self.pillNames, dict):
+            # แก้เป็นการเข้าถึง dictionary โดยตรง
+            self.label_pill_name.setText(self.pillNames.get("name", ""))
         
         # Left arrow button
         self.btn_left = QtWidgets.QPushButton(background_confirm_pill_name)
@@ -330,6 +345,7 @@ class PillNameScreen(QDialog):
         # Connect buttons to functions
         self.btn_left.clicked.connect(self.navigate_left)
         self.btn_right.clicked.connect(self.navigate_right)
+        
         self.save_button_pillname = QtWidgets.QToolButton(background_confirm_pill_name)
         self.save_button_pillname.setGeometry(QtCore.QRect(295, 375, 200, 90))
         self.save_button_pillname.setMinimumSize(QtCore.QSize(100, 50))
@@ -340,24 +356,39 @@ class PillNameScreen(QDialog):
         QtCore.QMetaObject.connectSlotsByName(background_confirm_pill_name)
 
     def navigate_left(self):
-        if self.current_pill_index > 0:
-            self.current_pill_index -= 1
-        else:
-            self.current_pill_index = len(self.pillNames) - 1
-        self.label_pill_name.setText(self.pillNames[self.current_pill_index])
+        if not self.pillNames:  # Check if the list is empty
+            return
+
+        # Update the current pill index
+        self.current_pill_index = (self.current_pill_index - 1) % len(self.pillNames)
+
+        # Update the label and input ID
+        self.update_display()
 
     def navigate_right(self):
-        if self.current_pill_index < len(self.pillNames) - 1:
-            self.current_pill_index += 1
-        else:
-            self.current_pill_index = 0
+        if not self.pillNames:  # Check if the list is empty
+            return
+
+        # Update the current pill index
+        self.current_pill_index = (self.current_pill_index + 1) % len(self.pillNames)
+
+        # Update the label and input ID
+        self.update_display()
+
+    def update_display(self):
         self.label_pill_name.setText(self.pillNames[self.current_pill_index])
+        if self.current_pill_index < len(self.pillID):
+            self.inputPillID = self.pillID[self.current_pill_index]
+        # else:
+        #     print("Error: current_pill_index is out of range for pillID")
+
+        # print(f"Current index: {self.current_pill_index}, Pill Names Length: {len(self.pillNames)}, Pill IDs Length: {len(self.pillID)}")
 
     def retranslateUi(self, background_confirm_pill_name):
         _translate = QtCore.QCoreApplication.translate
 
         global globalPillData
-        channelID = "ช่องที่ " + str(globalPillData.get("id", 0) + 1)
+        channelID = "ช่องที่ " + str(globalPillData.get("channelId", 0) + 1)
 
         background_confirm_pill_name.setWindowTitle(_translate("background_confirm_pill_name", "Dialog"))
         self.no_channel.setText(_translate("background_confirm_pill_name", channelID))
@@ -365,21 +396,18 @@ class PillNameScreen(QDialog):
         self.save_button_pillname.setText(_translate("background_confirm_pill_name", "บันทึก"))
         
     def savePillName(self):
+        selected_pill_name = self.label_pill_name.text()
+        if not selected_pill_name or selected_pill_name == "โปรดเลือกชื่อยา":
+            # QtWidgets.QMessageBox.warning(self, "Warning", "Please select a valid pill name.")
+            return
+
         global globalPillData
-        # กำหนดชื่อยาจากการเลือกของผู้ใช้
-        self.inputPillName = self.pillNames[self.current_pill_index]
-    
-        # ตรวจสอบว่าผู้ใช้ป้อนชื่อยาใหม่หรือไม่
-        if hasattr(self, 'pill_name_input'):
-            pill_name = self.pill_name_input.text()
-            if pill_name:
-                self.inputPillName = pill_name
-                self.pill_name_entered_signal.emit(pill_name)
-    
-        # อัปเดตค่าใน globalPillData
-        globalPillData["name"] = self.inputPillName
-    
-        print(f"Saving pill name: {self.inputPillName}")
+        globalPillData["name"] = selected_pill_name
+        globalPillData["pillId"] = self.inputPillID
+        # Save the data to the appropriate location
+        # For example, you might save it to a file or a database
+        # print(json.dumps(globalPillData, indent=4))
+        # print("\n บันทึกชื่อยาเรียบร้อยแล้ว \n")
     
         # เปลี่ยนไปยังหน้าจอสรุป
         save_pillname_screen = PillSummaryScreen(globalPillData, self.pillNames)
@@ -456,7 +484,7 @@ class TotalPillsScreen(QDialog):
         _translate = QtCore.QCoreApplication.translate
 
         global globalPillData
-        channelID = "ช่องที่ " + str(globalPillData["id"] + 1)
+        channelID = "ช่องที่ " + str(globalPillData["channelId"] + 1)
         
         background_total_pills.setWindowTitle(_translate("background_total_pills", "Dialog"))
         self.no_channel.setText(_translate("background_total_pills", channelID))
@@ -555,7 +583,7 @@ class AmountPillPerTimeScreen(QDialog):
         _translate = QtCore.QCoreApplication.translate
 
         global globalPillData
-        channelID = "ช่องที่ " + str(globalPillData["id"] + 1)
+        channelID = "ช่องที่ " + str(globalPillData["channelId"] + 1)
 
         background_amount_pill_per_time.setWindowTitle(_translate("background_amount_pill_per_time", "Dialog"))
         self.no_channel.setText(_translate("background_amount_pill_per_time", channelID))
@@ -674,7 +702,7 @@ class AddSummaryTimeScreen(QDialog):
         _translate = QtCore.QCoreApplication.translate
 
         global globalPillData
-        channelID = "ช่องที่ " + str(globalPillData["id"] + 1)
+        channelID = "ช่องที่ " + str(globalPillData["channelId"] + 1)
 
         background_confirm_times_to_take_pill.setWindowTitle(_translate("background_confirm_times_to_take_pill", "Dialog"))
         self.no_channel.setText(_translate("background_confirm_times_to_take_pill", channelID))
@@ -716,13 +744,7 @@ mockTime = 12
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    pill_names = [
-        "โปรดเลือกชื่อยา", "Metformin", "Glimepiride", "Gliclazide", "Glibenclamide", 
-        "Repaglinide", "Nateglinide", "Pioglitazone", "Rosiglitazone", "Sitagliptin", 
-        "Vildagliptin", "Saxagliptin", "Linagliptin", "Alogliptin", "Dapagliflozin", 
-        "Canagliflozin", "Empagliflozin", "Liraglutide", "Dulaglutide", "Semaglutide", 
-        "Insulin"
-    ]
+    pill_names = []
     screen = PillSummaryScreen({}, pill_names)
     widget = QtWidgets.QStackedWidget()
     widget.setWindowTitle("GUI - KLONG_YAA")

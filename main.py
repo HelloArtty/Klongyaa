@@ -13,8 +13,8 @@ from screen.pillSummaryScreen.main_pillSummaryScreen import PillSummaryScreen
 # from shared.data.light_list import lightList
 from shared.data.mock.config import config
 
-# config_path = "../Klongyaa/shared/data/mock/config.py"
-config_path = "D:/klongyaa/Klongyaa/shared/data/mock/config.py"
+config_path = "../Klongyaa/shared/data/mock/config.py"
+# config_path = "D:/klongyaa/Klongyaa/shared/data/mock/config.py"
 
 haveToTake = []
 
@@ -167,16 +167,18 @@ def show_error_dialog(message):
     dialog.exec_()
 
 def get_line_id_from_backend(username):
+    # print(username)
     try:
         url = config["url"] + "/user/pillboxLogin/" + str(username)
+        # print(url)
         response = requests.get(url)
         print(f"Response object: {response}")
         if response.status_code == 200:
             data = response.json()
             print(f"Data received: {data} \n")
-            return data.get("lineID")
+            return data.get("id")
         else:
-            print(f"Error: Unable to fetch lineID, status code: {response.status_code}")
+            print(f"Error: Unable to fetch id, status code: {response.status_code}")
             return None
     except Exception as e:
         print(f"Exception occurred: {e}")
@@ -325,27 +327,47 @@ if __name__ == "__main__":
         "1": {},
         "2": {},
         "3": {},
-        "4": {}, 
-        "5": {}, 
-        "6": {}, 
+        "4": {},
+        "5": {},
+        "6": {},
         "7": {}
     }
+    
+    def refreshPillData():
+        global pill_channel_datas
+        url = config["url"] + "/user/hardwareGetPillChannels/" + config["userId"]
+        res = requests.get(url)
+
+        if res.status_code == 200:
+            json_response = res.json()
+            if isinstance(json_response, list):
+                for pill in json_response:
+                    id_str = str(int(pill.get('channelIndex', 0)))
+                    pill_channel_datas[id_str] = {
+                        'id': pill.get('id', ''),
+                        'channelId': int(id_str),
+                        'name': pill.get('medicine', {}).get('name', ''),
+                        'totalPills': pill.get('total', 0),
+                        'pillsPerTime': pill.get('amountPerTime', 0),
+                        'timeToTake': [time.get('time', '').replace('.', ':') for time in pill.get('times', [])]
+                    }
+            print(f"Updated Pill Channel Data: {json.dumps(pill_channel_datas, indent=4)}")
+        else:
+            print(f"Error updating pill data: {res.status_code}")
+
     url = config["url"] + "/user/hardwareGetPillChannels/" + config["userId"]
     res = requests.get(url)
-    print(f"Request URL: {url} \n")
-    
-    
+        
     json_response = res.json()
-    # print(f"JSON Response: {json_response} \n")
-    
     if isinstance(json_response, list):
         for pill in json_response:
             id_str = str(int(pill.get('channelIndex', 0)))
-            print(f"Adding pill with id_str: {id_str}")
+            # print(f"Adding pill with id_str: {id_str}")
             pill_channel_datas[id_str] = {
-                'id': int(id_str),
+                'id': pill.get('id', ''),
+                'channelId': int(id_str),
                 'name': pill.get('medicine', {}).get('name', ''),
-                'totalPills': pill.get('Total', 0),
+                'totalPills': pill.get('total', 0),
                 'pillsPerTime': pill.get('amountPerTime', 0),
                 'timeToTake': [time.get('time', '').replace('.', ':') for time in pill.get('times', [])]
             }

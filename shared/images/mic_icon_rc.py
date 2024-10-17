@@ -1,3 +1,11 @@
+# -*- coding: utf-8 -*-
+
+# Resource object code
+#
+# Created by: The Resource Compiler for PyQt5 (Qt v5.15.2)
+#
+# WARNING! All changes made in this file will be lost!
+
 from PyQt5 import QtCore
 
 qt_resource_data = b"\
@@ -416,7 +424,7 @@ qt_resource_struct_v2 = b"\
 \x00\x00\x00\x00\x00\x02\x00\x00\x00\x01\x00\x00\x00\x02\
 \x00\x00\x00\x00\x00\x00\x00\x00\
 \x00\x00\x00\x18\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\
-\x00\x00\x01\x7c\xe6\xce\x0f\xd5\
+\x00\x00\x01\x91\x94\x27\x9b\x3f\
 "
 
 qt_version = [int(v) for v in QtCore.qVersion().split('.')]

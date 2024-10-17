@@ -1,11 +1,13 @@
 import sys
-from PyQt5.QtWidgets import QDialog, QApplication, QWidget 
-from PyQt5.QtGui import QMovie
-from PyQt5.QtCore import Qt, QTimer
-from PyQt5 import QtCore, QtGui, QtWidgets 
+
 # from screen.homeScreen.main_homeScreen import HomeScreen
 import __main__
 import shared.images.success_icon
+from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtGui import QMovie
+from PyQt5.QtWidgets import QApplication, QDialog, QWidget
+
 
 class SuccessSaveScreen(QDialog):
     def __init__(self, pillData):
@@ -20,7 +22,7 @@ class SuccessSaveScreen(QDialog):
 
     def stopDelay(self):
         self.timer.stop()
-        channelID = self.pillData["id"]
+        channelID = self.pillData["channelId"]
         allPillDatas = __main__.pill_channel_datas
         allPillDatas[str(channelID)] = self.pillData
         config = __main__.config

@@ -3,10 +3,12 @@ import sys
 
 import __main__
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QDialog, QListWidget, QListWidgetItem, QVBoxLayout
+from PyQt5.QtWidgets import (QDialog, QLabel, QListWidget, QListWidgetItem,
+                             QVBoxLayout)
 
 sys.path.append(os.path.abspath('../klongyaa/Klongyaa'))
 
+import json
 import threading
 import time
 from datetime import datetime, timedelta
@@ -21,13 +23,14 @@ from PyQt5.QtCore import QObject, QThread, pyqtSignal
 # from screen.homeScreen.ldr import get_first_load_value, pick_pill_detection
 from screen.inputPillNameScreen.main_inputPillnameScreen import PillNameScreen
 from screen.pillDetailScreen.main_detail_screen import DetailScreen
+from shared.data.mock.config import config
 
 isChangePage = False
 isSoundOn = False
 mixer.init()
 sound_notification = mixer.Sound("../Klongyaa/screen/homeScreen/sound_notification.wav")
-print(sound_notification)
- #---------------- Function play sound notification ----------------#
+# print(sound_notification)
+#---------------- Function play sound notification ----------------#
 def releaseCooldown():
     global sound_cooldown
     sound_cooldown = False
@@ -66,8 +69,8 @@ def sendLateMessage(pill_data, timeWillTake):
     text = f'ผู้สูงอายุลืมทานยา {pill_name} จำนวน {pill_amount_pertime} เม็ด เวลา {timeWillTake}'
     line_bot_api = LineBotApi(__main__.config['botAccessToken'])
     line_bot_api.push_message(__main__.config['userId'], TextMessage(text=text))
-    res = requests.post(__main__.config["url"] + "/pill-data/addLogHistory", json={
-            "channelID": str(pill_data["id"]),
+    res = requests.post(__main__.config["url"] + "/user/addHistory", json={
+            "channelID": str(pill_data["channelId"]),
             "lineUID": __main__.config["userId"],
             "task": "Forgot to take pill"
             })
@@ -87,14 +90,15 @@ def sendLineMessage(pill_data, timeWillTake):
     text = f'ผู้สูงอายุมียาต้องทานในอีก {inMinute} นาที'
     line_bot_api = LineBotApi(__main__.config['botAccessToken'])
     line_bot_api.push_message(__main__.config['userId'], TextMessage(text=text))
-    res = requests.post(__main__.config["url"] + "/pill-data/addLogHistory", json={
-            "channelID": str(pill_data["id"]),
-            "lineUID": __main__.config["userId"],
+    res = requests.post(__main__.config["url"] + "/user/addHistory", json={
             "task": "Take pill remider",
+            "userID": __main__.config["userId"],
+            "medicine": str(pill_data["pillId"]),
             })
     print(f'res : {res}')
-
+        
 class HomeScreen(QDialog):
+        
     def __init__(self, pill_channel_datas, config):
         super().__init__()
         self.pill_channel_datas = pill_channel_datas
@@ -102,7 +106,7 @@ class HomeScreen(QDialog):
         global isChangePage
         isChangePage = False
         self.setupUi(self)
-    
+        
     def setupUi(self, UIHomeScreen):
         pill_channel_buttons = []
         pill_channel_datas = self.pill_channel_datas
@@ -145,9 +149,9 @@ class HomeScreen(QDialog):
                 pill_channel_btn.setStyleSheet("background-color : #F8F37D")
             else :
                 # If don't have data in that slot
-                pill_channel_btn.setStyleSheet("background-color : #97C7F9 ")
-                pill_channel_btn.setIcon(QtGui.QIcon('../shared/images/plus_icon.png'))
-                pill_channel_btn.setIconSize(QtCore.QSize(60, 60))
+                icon_path = QtCore.QDir.current().absoluteFilePath("../shared/images/plus_icon.png")
+                pill_channel_btn.setIcon(QtGui.QIcon(icon_path))
+                pill_channel_btn.setIconSize(QtCore.QSize(45, 45))
 
             pill_channel_buttons.append(pill_channel_btn)
 
@@ -183,6 +187,26 @@ class HomeScreen(QDialog):
 
         self.checkTakePillThread(pill_channel_buttons, pill_channel_datas)
 
+    def fetch_pill_names(self):
+        url = __main__.config["url"] + "/user/getMedicines"
+        response = requests.get(url)
+        if response.status_code == 200:
+            data = response.json()
+
+            # เริ่มต้นด้วย "โปรดเลือกชื่อยา"
+            pill_names = ["โปรดเลือกชื่อยา"]
+            pill_ids = [""]
+
+            for pill in data:
+                pill_names.append(pill["name"])
+                pill_ids.append(pill["id"])
+
+
+            return pill_names, pill_ids
+        else:
+            # print("Failed to fetch pill names")
+            return ["โปรดเลือกชื่อยา"], [""]
+    
     def gotoPillDetailScreen(self, channelID, pill_channel_data, parent_window):
         global isChangePage
         isChangePage = True
@@ -191,18 +215,19 @@ class HomeScreen(QDialog):
             pillThatHaveToTakeFlag = 0
             takeEveryPillFlag = 0
 
-            for index, item in enumerate(__main__.haveToTake) :
-                if item["id"] == channelID :
+            for index, item in enumerate(__main__.haveToTake):
+                if item["channelId"] == channelID:
                     pillThatHaveToTakeFlag = 1
 
-                if item["isTaken"] == False :
+                if item["isTaken"] == False:
                     takeEveryPillFlag = 1
 
             if pillThatHaveToTakeFlag == 1 or takeEveryPillFlag == 0:
                 # Change screen to pill detail screen
-                detailScreen = DetailScreen(pill_channel_data)
+                detailScreen = DetailScreen(channelID)  # ส่ง channelID แทนที่จะเป็น pill_channel_data
                 __main__.widget.addWidget(detailScreen)
                 __main__.widget.setCurrentIndex(__main__.widget.currentIndex() + 1)
+                
         else:
             flag = 0
             for item in __main__.haveToTake:
@@ -211,22 +236,20 @@ class HomeScreen(QDialog):
 
             if flag == 0:
                 pillData = {
-                    "id": channelID,
+                    "channelId": channelID,
+                    "pillId":"",
                     "name": "",
                     "totalPills": "",
                     "pillsPerTime": "",
                     "timeToTake": []
                 }
                 
-                #รายการชื่อยา
-                pill_names = ["โปรดเลือกชื่อยา","Metformin", "Glimepiride", "Gliclazide", "Glibenclamide", "Repaglinide",
-                              "Nateglinide", "Pioglitazone", "Rosiglitazone", "Sitagliptin", "Vildagliptin",
-                              "Saxagliptin", "Linagliptin", "Alogliptin", "Dapagliflozin", "Canagliflozin",
-                              "Empagliflozin", "Liraglutide", "Dulaglutide", "Semaglutide", "Insulin"]
+                # รายการชื่อยาและ ID
+                pill_names, pill_ids = self.fetch_pill_names()
 
-                # สร้างหน้าจอการเลือกชื่อยา
-                InputScreen = PillNameScreen(pillData, pill_names)
-                print("\n ไปหน้าเพิ่มชื่อยา \n")
+                # สร้างหน้าจอการเลือกชื่อยา และส่ง pill_names, pill_ids
+                InputScreen = PillNameScreen(pillData=pillData, pillNames=pill_names, pillID=pill_ids, parent=None)
+                # print("\n ไปหน้าเพิ่มชื่อยา \n")
                 __main__.widget.addWidget(InputScreen)
                 __main__.widget.setCurrentIndex(__main__.widget.currentIndex() + 1)
     
@@ -256,14 +279,13 @@ class HomeScreen(QDialog):
     #             for no, item in enumerate(__main__.haveToTake) :
     #                 if item["id"] == index :
     #                     __main__.haveToTake[no]["isTaken"] = True
-    #                     res = requests.post(__main__.config["url"] + "/pill-data/addLogHistory", json={
+    #                     res = requests.post(__main__.config["url"] + "/user/addHistory", json={
     #                             "channelID": str(item["id"]),
     #                             "lineUID": __main__.config["userId"],
     #                             "task": "Take pill"
     #                             })
     #                     print(f'res : {res}')
     #                     print('Take pill')
-
 
     def checkTakePill(self, n, pill_channel_buttons, pill_channel_datas) :
         for index in range(8) :
@@ -307,26 +329,50 @@ class HomeScreen(QDialog):
                                     "isLateMessageSended": False,
                                 }
                                 __main__.haveToTake.append(takeTimeData)
+                                
+                            def showPillDetailScreen(pill_data):
+                                # สร้างหน้าจอใหม่ขนาด 800x480
+                                pill_detail_dialog = QDialog()
+                                pill_detail_dialog.setFixedSize(800, 480)
+                                pill_detail_dialog.setStyleSheet("background-color: #FBFADD;")
 
-                            # If user are not already take that pill
+                                # แสดงชื่อยา
+                                pill_name_label = QLabel(pill_data["name"], pill_detail_dialog)
+                                pill_name_label.setFont(QtGui.QFont("Arial", 20))
+                                pill_name_label.setGeometry(50, 50, 700, 50)  # ตำแหน่งและขนาด
+                                pill_name_label.setAlignment(QtCore.Qt.AlignCenter)
+
+                                # แสดงจำนวนยา
+                                pill_amount_label = QLabel(f"{pill_data['pillsPerTime']} เม็ด", pill_detail_dialog)
+                                pill_amount_label.setFont(QtGui.QFont("Arial", 18))
+                                pill_amount_label.setGeometry(50, 120, 700, 50)  # ตำแหน่งและขนาด
+                                pill_amount_label.setAlignment(QtCore.Qt.AlignCenter)
+
+                                # แสดงรูปยาถ้ามี
+                                if "pillImagePath" in pill_data:
+                                    pill_image_label = QLabel(pill_detail_dialog)
+                                    pill_image = QtGui.QPixmap(pill_data["pillImagePath"]).scaled(100, 100, QtCore.Qt.KeepAspectRatio)
+                                    pill_image_label.setPixmap(pill_image)
+                                    pill_image_label.setGeometry(350, 200, 100, 100)  # ตำแหน่งและขนาดของรูป
+
+                            # แสดงหน้าจอ
+                                pill_detail_dialog.exec_()
                             # ถ้ายังไม่ได้หยิบยา
-                            # if not alreadyTakeFlag :
-                            #     self.ledLightFunction(index)
+                            if not alreadyTakeFlag:
+                                # เรียกฟังก์ชันใหม่เพื่อแสดงหน้าจอ
+                                # self.ledLightFunction(index)
 
                                 global isSoundOn
-                                if not isSoundOn :
+                                if not isSoundOn:
                                     playSound()
                                     print(pill_channel_datas[str(index)])
                                     sendLineMessage(pill_channel_datas[str(index)], stringCompareTime)
                                     isSoundOn = True
 
-                                pill_channel_btn.setStyleSheet("background-color : #F8F37D")
-                                channel_text = "ช่องที่ " + str(index + 1) + " \n" + pill_channel_data["name"] + " \n" + str(pill_channel_data["pillsPerTime"]) + " เม็ด"
-                                pill_channel_btn.setText(channel_text)
-                            else :
-                                pill_channel_btn.setStyleSheet("background-color : #FBFADD")
-                                pill_channel_btn.setText("")
-                                stopSound()                            
+                                # แสดงหน้าจอใหม่ที่สร้างขึ้นมา
+                                showPillDetailScreen(pill_channel_datas[str(index)])
+                            else:
+                                stopSound()
                         else :
                             haveItemFlag = False
                             for item in __main__.haveToTake :
@@ -336,7 +382,6 @@ class HomeScreen(QDialog):
                                 pill_channel_btn.setStyleSheet("background-color : #FBFADD")
                                 pill_channel_btn.setText("")
                                 
-                        
                     else :
                         if checkIsTaken(index) == "not take" and checkIsSendLateMessage(index) == "not send":
                             print("User have not take the pill")

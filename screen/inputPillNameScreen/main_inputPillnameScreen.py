@@ -25,14 +25,17 @@ def resetGlobalData():
     globalPillData = {}
 
 class PillNameScreen(QDialog):
-    def __init__(self, pillData=None, pillNames=None, parent=None):
+    def __init__(self, pillData=None, pillNames=None, pillID=None, parent=None):
         super().__init__(parent)
         global globalPillData
         globalPillData = pillData if pillData is not None else {}
         self.pillNames = pillNames if pillNames is not None else []
+        self.pillID = pillID if pillID is not None else []
         self.inputPillName = globalPillData.get("name", "")
+        self.inputPillID = globalPillData.get("pillId", "")
         self.setupUi(self)
-
+        
+        
     def setupUi(self, background_confirm_pill_name):
         background_confirm_pill_name.setObjectName("background_confirm_pill_name")
         background_confirm_pill_name.resize(800, 480)
@@ -67,7 +70,12 @@ class PillNameScreen(QDialog):
 
         # Set initial selection
         self.current_pill_index = 0
-        self.label_pill_name.setText(self.pillNames[self.current_pill_index])
+        if isinstance(self.pillNames, list) and len(self.pillNames) > 0:
+            self.label_pill_name.setText(self.pillNames[self.current_pill_index])
+        elif isinstance(self.pillNames, dict):
+            # แก้เป็นการเข้าถึง dictionary โดยตรง
+            self.label_pill_name.setText(self.pillNames.get("name", ""))
+
 
         # Left arrow button
         self.btn_left = QtWidgets.QPushButton(background_confirm_pill_name)
@@ -102,6 +110,7 @@ class PillNameScreen(QDialog):
         else:
             self.current_pill_index = len(self.pillNames) - 1
         self.label_pill_name.setText(self.pillNames[self.current_pill_index])
+        self.inputPillID = self.pillID[self.current_pill_index]
 
     def navigate_right(self):
         if self.current_pill_index < len(self.pillNames) - 1:
@@ -109,12 +118,13 @@ class PillNameScreen(QDialog):
         else:
             self.current_pill_index = 0
         self.label_pill_name.setText(self.pillNames[self.current_pill_index])
-
+        self.inputPillID = self.pillID[self.current_pill_index]
+        
     def retranslateUi(self, background_confirm_pill_name):
         _translate = QtCore.QCoreApplication.translate
 
         global globalPillData
-        channelID = "ช่องที่ " + str(globalPillData.get("id", 0) + 1)
+        channelID = "ช่องที่ " + str(globalPillData.get("channelId", 0) + 1)
 
         background_confirm_pill_name.setWindowTitle(_translate("background_confirm_pill_name", "Dialog"))
         self.no_channel.setText(_translate("background_confirm_pill_name", channelID))
@@ -129,9 +139,10 @@ class PillNameScreen(QDialog):
         
         global globalPillData
         globalPillData["name"] = selected_pill_name
+        globalPillData["pillId"] = self.inputPillID
         total_pills_screen = TotalPillsScreen(pillData=globalPillData)
-        print(json.dumps(globalPillData, indent=4))
-        print("\n ไปหน้าเพิ่มจำนวนยาทั้งหมดและจำนวนยาที่ต้องกินต่อมื้อ \n")
+        # print(json.dumps(globalPillData, indent=4))
+        # print("\n ไปหน้าเพิ่มจำนวนยาทั้งหมดและจำนวนยาที่ต้องกินต่อมื้อ \n")
         __main__.widget.addWidget(total_pills_screen)
         __main__.widget.setCurrentIndex(__main__.widget.currentIndex() + 1)
 

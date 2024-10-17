@@ -4,10 +4,12 @@ from datetime import datetime
 from functools import partial
 
 import __main__
+import requests
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QTimer
 from PyQt5.QtGui import QMovie
 from PyQt5.QtWidgets import QDialog
+from screen.pillSummaryScreen.main_pillSummaryScreen import PillSummaryScreen
 
 globalTimesToTakePillArr = []
 globalPillData = {}
@@ -122,7 +124,7 @@ class InputTimeToTakePillScreen(QDialog):
         _translate = QtCore.QCoreApplication.translate
         global globalPillData
         
-        channelID = "ช่องที่ " + str(globalPillData["id"] + 1)
+        channelID = "ช่องที่ " + str(globalPillData["channelId"] + 1)
         background_input_times_to_take_pill.setWindowTitle(_translate("background_input_times_to_take_pill", "Dialog"))
         self.no_channel.setText(_translate("background_input_times_to_take_pill", channelID))
         self.question_input_times_to_take_pill.setText(_translate("background_input_times_to_take_pill", "เพิ่มเวลาทานยา"))
@@ -152,7 +154,7 @@ class InputTimeToTakePillScreen(QDialog):
     
         # Sort times
         globalPillData['timeToTake'].sort(key=lambda time: datetime.strptime(time, "%H:%M"))
-        print(json.dumps(globalPillData, indent=4))
+        # print(json.dumps(globalPillData, indent=4))
         add_summary_time_screen = AddSummaryTimeScreen(globalPillData)
         __main__.widget.addWidget(add_summary_time_screen)
         __main__.widget.setCurrentIndex(__main__.widget.currentIndex() + 1)
@@ -256,7 +258,7 @@ class AddSummaryTimeScreen(QDialog):
         _translate = QtCore.QCoreApplication.translate
 
         global globalPillData
-        channelID = "ช่องที่ " + str(globalPillData["id"] + 1)
+        channelID = "ช่องที่ " + str(globalPillData["channelId"] + 1)
 
         background_confirm_times_to_take_pill.setWindowTitle(_translate("background_confirm_times_to_take_pill", "Dialog"))
         self.no_channel.setText(_translate("background_confirm_times_to_take_pill", channelID))
@@ -290,23 +292,41 @@ class AddSummaryTimeScreen(QDialog):
         __main__.widget.removeWidget(self)
         __main__.widget.addWidget(screen)
         __main__.widget.setCurrentIndex(__main__.widget.currentIndex()+1)
+    
+    def fetch_pill_names(self):
+        url = __main__.config["url"] + "/user/getMedicines"
+        response = requests.get(url)
+        if response.status_code == 200:
+            data = response.json()
 
+            # เริ่มต้นด้วย "โปรดเลือกชื่อยา"
+            pill_names = ["โปรดเลือกชื่อยา"]
+            pill_ids = [""]
+
+            for pill in data:
+                pill_names.append(pill["name"])
+                pill_ids.append(pill["id"])
+
+
+            return pill_names, pill_ids
+        else:
+            # print("Failed to fetch pill names")
+            return ["โปรดเลือกชื่อยา"], [""]
+        
     def goToPillSummaryScreen(self):
         #================ go to add summary time screen ====================#
         global globalTimesToTakePillArr
         global globalPillData
         globalPillData["timeToTake"] = globalTimesToTakePillArr
-        print("\n ไปหน้าสรุป \n")
-        print(json.dumps(globalPillData, indent=4))
+        # print("\n ไปหน้าสรุป \n")
+        # print(json.dumps(globalPillData, indent=4))
         
-        pill_names = [
-    "โปรดเลือกชื่อยา", "Metformin", "Glimepiride", "Gliclazide", "Glibenclamide", 
-    "Repaglinide", "Nateglinide", "Pioglitazone", "Rosiglitazone", "Sitagliptin", 
-    "Vildagliptin", "Saxagliptin", "Linagliptin", "Alogliptin", "Dapagliflozin", 
-    "Canagliflozin", "Empagliflozin", "Liraglutide", "Dulaglutide", "Semaglutide", 
-    "Insulin"
-]
-        add_summary_time_screen = __main__.PillSummaryScreen(globalPillData, pill_names)
+        # รายการชื่อยาและ ID
+        pill_names, pill_ids = self.fetch_pill_names()
+        # print("name : ",pill_names)
+        # print("pillId : ", pill_ids)
+                
+        add_summary_time_screen = PillSummaryScreen(pillData=globalPillData, pillNames=pill_names, pillID=pill_ids, parent=None)
         __main__.widget.removeWidget(self)
         __main__.widget.addWidget(add_summary_time_screen)
         __main__.widget.setCurrentIndex(__main__.widget.currentIndex()+1)

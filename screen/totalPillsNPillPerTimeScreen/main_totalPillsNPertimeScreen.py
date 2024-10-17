@@ -78,7 +78,7 @@ class TotalPillsScreen(QDialog):
         _translate = QtCore.QCoreApplication.translate
 
         global globalPillData
-        channelID = "ช่องที่ " + str(globalPillData.get("id", 0) + 1)
+        channelID = "ช่องที่ " + str(globalPillData.get("channelId", 0) + 1)
 
         background_total_pills.setWindowTitle(_translate("background_total_pills", "Dialog"))
         self.no_channel.setText(_translate("background_total_pills", channelID))
@@ -180,7 +180,7 @@ class AmountPillPerTimeScreen(QDialog):
         _translate = QtCore.QCoreApplication.translate
 
         global globalPillData
-        channelID = "ช่องที่ " + str(globalPillData["id"] + 1)
+        channelID = "ช่องที่ " + str(globalPillData["channelId"] + 1)
 
         background_amount_pill_per_time.setWindowTitle(_translate("background_amount_pill_per_time", "Dialog"))
         self.no_channel.setText(_translate("background_amount_pill_per_time", channelID))
@@ -197,8 +197,8 @@ class AmountPillPerTimeScreen(QDialog):
 
             global globalPillData
             globalPillData["pillsPerTime"] = self.amount_pill
-            print(json.dumps(globalPillData, indent=4))
-            print("\n ไปหน้าเพิ่มเวลาทานยา \n")
+            # print(json.dumps(globalPillData, indent=4))
+            # print("\n ไปหน้าเพิ่มเวลาทานยา \n")
 
             input_times_to_take_pill_screen = __main__.InputTimeToTakePillScreen(globalPillData, -1, False)
             __main__.widget.removeWidget(self)

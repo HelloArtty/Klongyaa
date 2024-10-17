@@ -1,13 +1,45 @@
-from PyQt5 import QtCore, QtGui, QtWidgets
+import json
+
 import __main__
 import requests
+from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class DetailScreen(QtWidgets.QDialog):
-    def __init__(self, pill_channel_data):
+    def __init__(self, channelId):
         super().__init__()
-        self.pill_channel_data = pill_channel_data
+        self.channelId = channelId  # เก็บ channelId ที่ถูกส่งเข้ามา
+        self.pill_channel_data = self.fetch_pill_channel_data()  # เรียกฟังก์ชันเพื่อดึงข้อมูล
         self.setupUi(self)
+        # print(f"Detail Pill Channel Data: {json.dumps(self.pill_channel_data, indent=4)}")
 
+    def fetch_pill_channel_data(self):
+        url = f"{__main__.config['url']}/user/hardwareGetPillChannels/{__main__.config['userId']}"
+        response = requests.get(url)
+        if response.status_code == 200:
+            json_response = response.json()
+            if isinstance(json_response, list) and len(json_response) > 0:
+                for pill in json_response:
+                    id_str = str(int(pill.get('channelIndex', 0)))
+                    if int(id_str) == self.channelId:
+                        pill_channel_data = {
+                            'id': pill.get('id', ''),
+                            'channelId': int(id_str),
+                            'name': pill.get('medicine', {}).get('name', ''),
+                            'totalPills': pill.get('total', ''),
+                            'pillsPerTime': pill.get('amountPerTime', ''),
+                            'timeToTake': [time.get('time', '').replace('.', ':') for time in pill.get('times', [])]
+                        }
+                        print(f"Fetched pill channel data(Detail): {json.dumps(pill_channel_data, indent=4)}")  # แสดงข้อมูลที่ดึงมาได้
+                        return pill_channel_data
+                print(f"No data found for channel ID: {self.channelId}")
+                return None
+            print("Fetched data is not a list or is empty")
+            return None
+        else:
+            print(f"Failed to fetch pill channel data: {response.status_code}")
+            return None
+    
     def setupUi(self, background_detail_screen):
         background_detail_screen.setObjectName("background_detail_screen")
         background_detail_screen.resize(800, 480)
@@ -117,46 +149,48 @@ class DetailScreen(QtWidgets.QDialog):
 
         #---------------------------------------------------------------------------------------#
         #------------------------- SHOW TIME USE FOR LOOP ---------------------------------------#
-        for time in self.pill_channel_data["timeToTake"] :
-            timeIndex = self.pill_channel_data["timeToTake"].index(time)
+        if 'timeToTake' in self.pill_channel_data:
+                for time in self.pill_channel_data["timeToTake"] :
+                    timeIndex = self.pill_channel_data["timeToTake"].index(time)
 
-            timeToTakeLabelObjectName = "label_time_no_" + str(timeIndex)
-            timeToTakeLabelNameText = "เวลาที่ " + str(timeIndex + 1)
-            timeToTakeLabel = QtWidgets.QLabel(self.scrollAreaWidgetContents)
-            timeToTakeLabel.setMinimumSize(QtCore.QSize(250, 0))
-            timeToTakeLabel.setMaximumSize(QtCore.QSize(250, 16777215))
-            timeToTakeLabel.setStyleSheet("background-color: none;\n" "font: 75 30pt \"JasmineUPC\";\n" "border-radius: 25px;\n" "color: #070021;\n" "background-color: #C5E1FF;")
-            timeToTakeLabel.setAlignment(QtCore.Qt.AlignCenter)
-            timeToTakeLabel.setText(timeToTakeLabelNameText)
-            timeToTakeLabel.setObjectName(timeToTakeLabelObjectName)
-            self.gridLayout_2.addWidget(timeToTakeLabel, timeIndex + 12, 0, 1, 1)
+                    timeToTakeLabelObjectName = "label_time_no_" + str(timeIndex)
+                    timeToTakeLabelNameText = "เวลาที่ " + str(timeIndex + 1)
+                    timeToTakeLabel = QtWidgets.QLabel(self.scrollAreaWidgetContents)
+                    timeToTakeLabel.setMinimumSize(QtCore.QSize(250, 0))
+                    timeToTakeLabel.setMaximumSize(QtCore.QSize(250, 16777215))
+                    timeToTakeLabel.setStyleSheet("background-color: none;\n" "font: 75 30pt \"JasmineUPC\";\n" "border-radius: 25px;\n" "color: #070021;\n" "background-color: #C5E1FF;")
+                    timeToTakeLabel.setAlignment(QtCore.Qt.AlignCenter)
+                    timeToTakeLabel.setText(timeToTakeLabelNameText)
+                    timeToTakeLabel.setObjectName(timeToTakeLabelObjectName)
+                    self.gridLayout_2.addWidget(timeToTakeLabel, timeIndex + 12, 0      , 1, 1)
 
-            timeToTakeDataObjectName = "data_time_no_" + str(timeIndex)
-            timeToTakeDataNameText = str(time) + " น."
-            timeToTakeData = QtWidgets.QLabel(self.scrollAreaWidgetContents)
-            timeToTakeData.setText(timeToTakeDataNameText)
-            timeToTakeData.setStyleSheet("font: 75 34pt \"JasmineUPC\";\n" "color: #070021;\n" "")
-            timeToTakeData.setObjectName(timeToTakeDataObjectName)
-            self.gridLayout_2.addWidget(timeToTakeData, timeIndex + 12, 1, 1, 1)
-            #--------------- CREATE BUTTON FAKE -------------------------------------------#
-            button_fake = QtWidgets.QToolButton(self.scrollAreaWidgetContents)
-            button_fake.setMinimumSize(QtCore.QSize(70, 70))
-            button_fake.setStyleSheet("QToolButton#button_fake {\n"
-"   font-size: 40px;\n"
-"  background-color:rgb(156, 183, 255);\n"
-"  border-radius: 35px;\n"
-"  color: white;\n"
-"}\n"
-"QToolButton#button_fake :hover {\n"
-" font-size: 40px;\n"
-" background-color:rgb(156, 183, 255);\n"
-"  border-radius:35px;\n"
-"  color: white;\n"
-"}")
-            button_fake.setText("")
-            button_fake.setObjectName("button_fake")
-            self.gridLayout_2.addWidget(button_fake, timeIndex + 12, 2, 1, 1)
-
+                    timeToTakeDataObjectName = "data_time_no_" + str(timeIndex)
+                    timeToTakeDataNameText = str(time) + " น."
+                    timeToTakeData = QtWidgets.QLabel(self.scrollAreaWidgetContents)
+                    timeToTakeData.setText(timeToTakeDataNameText)
+                    timeToTakeData.setStyleSheet("font: 75 34pt \"JasmineUPC\";\n" "color: #070021;\n" "")
+                    timeToTakeData.setObjectName(timeToTakeDataObjectName)
+                    self.gridLayout_2.addWidget(timeToTakeData, timeIndex + 12, 1, 1, 1)
+                    #--------------- CREATE BUTTON FAKE -------------------------------------------#
+                    button_fake = QtWidgets.QToolButton(self.scrollAreaWidgetContents)
+                    button_fake.setMinimumSize(QtCore.QSize(70, 70))
+                    button_fake.setStyleSheet("QToolButton#button_fake {\n"
+        "   font-size: 40px;\n"
+        "  background-color:rgb(156, 183, 255);\n"
+        "  border-radius: 35px;\n"
+        "  color: white;\n"
+        "}\n"
+        "QToolButton#button_fake :hover {\n"
+        " font-size: 40px;\n"
+        " background-color:rgb(156, 183, 255);\n"
+        "  border-radius:35px;\n"
+        "  color: white;\n"
+        "}")
+                    button_fake.setText("")
+                    button_fake.setObjectName("button_fake")
+                    self.gridLayout_2.addWidget(button_fake, timeIndex + 12, 2, 1, 1)
+        else:
+                print("Key 'timeToTake' not found in pill_channel_data")
         
         self.data_pill_name = QtWidgets.QLabel(self.scrollAreaWidgetContents)
         self.data_pill_name.setEnabled(True)
@@ -292,13 +326,6 @@ class DetailScreen(QtWidgets.QDialog):
 "")
         self.no_channel.setAlignment(QtCore.Qt.AlignCenter)
         self.no_channel.setObjectName("no_channel")
-        # self.button_edit_pill_data = QtWidgets.QPushButton(background_detail_screen)
-        # self.button_edit_pill_data.setGeometry(QtCore.QRect(680, 10, 75, 75))
-        # self.button_edit_pill_data.setIconSize(QtCore.QSize(68, 68))
-        # self.button_edit_pill_data.setIcon(QtGui.QIcon('/home/pi/Desktop/GUI-Klongyaa_senior-project-main/shared/images/edit.png'))
-        # self.button_edit_pill_data.setStyleSheet("background-color: #24BD73; border-radius: 35px;")
-        # self.button_edit_pill_data.setObjectName("button_edit_pill_data")
-        # self.button_edit_pill_data.clicked.connect(self.goToEditPage)
 
         self.button_delete_pill_channel = QtWidgets.QToolButton(background_detail_screen)
         self.button_delete_pill_channel.setGeometry(QtCore.QRect(445, 400, 220, 75))
@@ -324,24 +351,11 @@ class DetailScreen(QtWidgets.QDialog):
         self.retranslateUi(background_detail_screen)
         QtCore.QMetaObject.connectSlotsByName(background_detail_screen)
 
-    def deletePillData(self):
-        id = self.pill_channel_data["id"]
-        res = requests.post(__main__.config["url"] + "/pill-data/deletePillChannelData/", json={
-            "channelID": str(self.pill_channel_data["id"]),
-            "lineUID": __main__.config["userId"]
-            })
-        print(res)
-        
-        print('from delete pill data in main_detail_screen.py')
-        __main__.pill_channel_datas[str(id)] = {}
-        __main__.widget.removeWidget(self)
-        __main__.widget.addWidget(__main__.HomeScreen(__main__.pill_channel_datas, __main__.config))
-        __main__.widget.setCurrentIndex(__main__.widget.currentIndex()+1)
-
     def retranslateUi(self, background_detail_screen):
-        headerText = "ข้อมูลยาช่องที่ " + str(self.pill_channel_data["id"] + 1)
+        _translate = QtCore.QCoreApplication.translate
+        headerText = "ข้อมูลยาช่องที่ " + str(self.pill_channel_data["channelId"] + 1)
         pillAmountText = str(self.pill_channel_data["pillsPerTime"]) + " เม็ด/มื้อ"
-        channelNotext = "ช่องที่ " + str(self.pill_channel_data["id"] + 1)
+        channelNotext = "ช่องที่ " + str(self.pill_channel_data["channelId"] + 1)
         pillTotalText = str(self.pill_channel_data["totalPills"]) + " เม็ด"
 
         _translate = QtCore.QCoreApplication.translate
@@ -361,6 +375,22 @@ class DetailScreen(QtWidgets.QDialog):
         # self.button_edit_pill_data.setText(_translate("background_detail_screen", "🖉"))
 
         self.no_channel.setText(_translate("background_detail_screen", channelNotext))
+    
+    def deletePillData(self):
+        id = self.pill_channel_data["id"]
+        print("Del id = ",id)
+        channelId = self.pill_channel_data["channelId"]
+        print("Del channelId = ",channelId)
+        url = f"{__main__.config['url']}/user/deletePillChannel/{id}"
+        res = requests.delete(url)
+
+        __main__.pill_channel_datas[str(channelId)] = {}
+        __main__.widget.removeWidget(self)
+        __main__.widget.addWidget(__main__.HomeScreen(__main__.pill_channel_datas, __main__.config))
+        __main__.widget.setCurrentIndex(__main__.widget.currentIndex()+1)
+
+
+
     def goBack(self) :
         __main__.widget.removeWidget(self)
         __main__.widget.addWidget(__main__.HomeScreen(__main__.pill_channel_datas, __main__.config))
