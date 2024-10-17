@@ -31,11 +31,6 @@ Klongyaa is a senior project aimed at helping elderly people manage their medica
     pip install -r requirements.txt
     ```
 
-3. Generate Python files from UI files:
-    ```sh
-    pyuic5 -x [file.ui input path] -o [file.py output path]
-    ```
-
 ## Usage
 1. Run the main application:
     ```sh
