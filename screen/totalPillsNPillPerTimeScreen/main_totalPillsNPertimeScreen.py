@@ -2,10 +2,12 @@ import json
 import sys
 
 import __main__
+from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QApplication, QDialog, QLabel, QWidget
-from screen.totalPillsNPillPerTimeScreen.gen.gen_amount_pill_per_time_screen import *
-from screen.totalPillsNPillPerTimeScreen.gen.gen_total_pills_screen import *
-from screen.totalPillsNPillPerTimeScreen.shared.gen_mock_screen import *
+
+# from screen.totalPillsNPillPerTimeScreen.gen.gen_amount_pill_per_time_screen import *
+# from screen.totalPillsNPillPerTimeScreen.gen.gen_total_pills_screen import *
+# from screen.totalPillsNPillPerTimeScreen.shared.gen_mock_screen import *
 
 globalPillData = {}
 
