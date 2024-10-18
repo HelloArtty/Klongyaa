@@ -14,39 +14,28 @@ from screen.pillSummaryScreen.main_pillSummaryScreen import PillSummaryScreen
 from shared.data.mock.config import config
 
 config_path = "../Klongyaa/shared/data/mock/config.py"
-# config_path = "D:/klongyaa/Klongyaa/shared/data/mock/config.py"
 
 haveToTake = []
 
-# def speech_recog_function():
-#     mic = sr.Microphone(device_index=0)
-#     recog = sr.Recognizer()
-
-#     with mic as source:
-#         print("Listening...")
-#         audio = recog.listen(source)
-#         try:
-#             text = recog.recognize_google(audio, language="th")
-#             return text
-#         except sr.UnknownValueError:
-#             print("Could not understand the audio")
-#             return None
-#         except sr.RequestError as e:
-#             print(f"Could not request results; {e}")
-#             return None
-
-def save_userId(userId):
+def save_userId(user_info):
     global config_path
     with open(config_path, 'r') as file:
         lines = file.readlines()
     with open(config_path, 'w') as file:
         for line in lines:
             if line.strip().startswith('"userId"'):
-                file.write(f'    "userId": "{userId}",\n')
+                file.write(f'    "userId": "{user_info["id"]}",\n')
+            elif line.strip().startswith('"lineId"'):
+                file.write(f'    "lineId": "{user_info["lineID"]}",\n')
+            elif line.strip().startswith('"email"'):
+                file.write(f'    "email": "{user_info["email"]}",\n')
+            elif line.strip().startswith('"username"'):
+                file.write(f'    "username": "{user_info["username"]}",\n')
             else:
                 file.write(line)
 
-def show_confirmation_dialog(user_id):
+
+def show_confirmation_dialog(email):
     dialog = QDialog()
     dialog.setWindowTitle("Confirm")
     dialog.resize(800, 480)
@@ -54,7 +43,7 @@ def show_confirmation_dialog(user_id):
 
     layout = QVBoxLayout()
 
-    label = QLabel(f"รหัสของคุณคือ<br><font color='red'>{user_id}</font><br>กรุณาตรวจสอบให้เรียบร้อยก่อนกดยืนยัน")
+    label = QLabel(f"อีเมลของคุณคือ<br><font color='red'>{email}</font><br>กรุณาตรวจสอบให้เรียบร้อยก่อนกดยืนยัน")
     label.setStyleSheet("font-size: 34px; font-weight: bold; text-align: center;")
     label.setAlignment(QtCore.Qt.AlignCenter)
     layout.addWidget(label)
@@ -167,16 +156,23 @@ def show_error_dialog(message):
     dialog.exec_()
 
 def get_line_id_from_backend(username):
-    # print(username)
+    print(username)
     try:
         url = config["url"] + "/user/pillboxLogin/" + str(username)
-        # print(url)
         response = requests.get(url)
         print(f"Response object: {response}")
         if response.status_code == 200:
             data = response.json()
             print(f"Data received: {data} \n")
-            return data.get("id")
+            
+            # Return the required information as a dictionary
+            result = {
+                'id': data.get('id'),
+                'email': data.get('email'),
+                'username': data.get('username'),
+                'lineID': data.get('lineID')
+            }
+            return result
         else:
             print(f"Error: Unable to fetch id, status code: {response.status_code}")
             return None
@@ -275,23 +271,23 @@ def check_and_update_user_id():
 
         buttonBox = QDialogButtonBox(QDialogButtonBox.Ok)
         buttonBox.setStyleSheet(
-    '''
-    QPushButton {
-        font: 75 36pt "JasmineUPC";
-        font-size: 24px;
-        padding: 10px;
-        background-color: #23B36D;
-        color: #ffffff;
-        border-radius: 5px;
-        border: 2px solid #2E8B57;
-        width: 80px;
-        height: 30px;
-    }
-    QPushButton:hover {
-        background-color: #24BD73;
-    }
-    '''
-)
+        '''
+        QPushButton {
+            font: 75 36pt "JasmineUPC";
+            font-size: 24px;
+            padding: 10px;
+            background-color: #23B36D;
+            color: #ffffff;
+            border-radius: 5px;
+            border: 2px solid #2E8B57;
+            width: 80px;
+            height: 30px;
+        }
+        QPushButton:hover {
+            background-color: #24BD73;
+        }
+        '''
+        )
 
         ok_button = buttonBox.button(QDialogButtonBox.Ok)
         ok_button.setText("ต่อไป")
@@ -306,15 +302,18 @@ def check_and_update_user_id():
         if dialog.exec_() == QDialog.Accepted:
             username = edit.text()
             if username:
-                lineID = get_line_id_from_backend(username)
-                if lineID:
-                    if show_confirmation_dialog(lineID) == QDialog.Accepted:
-                        save_userId(lineID)
-                        config['userId'] = lineID
+                user_info = get_line_id_from_backend(username)
+                if user_info:
+                    if show_confirmation_dialog(user_info['email']) == QDialog.Accepted:
+                        save_userId(user_info)
+                        config['userId'] = user_info['id']
+                        config['lineId'] = user_info['lineID']
+                        config['email'] = user_info['email']
+                        config['username'] = user_info['username']
                     else:
                         continue
                 else:
-                    show_error_dialog("ไม่สามารถรับ User ID จากระบบได้!")
+                    show_error_dialog("ไม่สามารถรับข้อมูลจากระบบได้!")
             else:
                 show_error_dialog("กรุณากรอกชื่อผู้ใช้!")
 

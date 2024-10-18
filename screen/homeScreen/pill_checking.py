@@ -1,14 +1,4 @@
-import threading
-import time
-from datetime import datetime, timedelta
-
 import __main__
-import requests
-from pygame import mixer
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QDialog, QLabel
-from screen.homeScreen.line_messaging import sendLateMessage, sendLineMessage
-from screen.homeScreen.showPillDetailsPopup import showPillDetailsScreen
 
 
 def checkIsTaken(channelId, haveToTake):

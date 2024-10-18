@@ -4,7 +4,7 @@ import requests
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
-def showPillDetailsScreen(pill_channel_data):
+def showTakePillScreen(pill_channel_data):
     # Create a QWidget for the full-screen view
     pill_details_screen = QtWidgets.QWidget()
     pill_details_screen.setFixedSize(800, 480)

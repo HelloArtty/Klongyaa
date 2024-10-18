@@ -15,12 +15,12 @@ from PyQt5.QtWidgets import QDialog
 from screen.homeScreen.line_messaging import sendLateMessage, sendLineMessage
 from screen.homeScreen.pill_checking import (checkIsSendLateMessage,
                                              checkIsTaken)
-from screen.homeScreen.showPillDetailsPopup import showPillDetailsScreen
+from screen.homeScreen.showPillDetails import showTakePillScreen
 from screen.homeScreen.ui_setup import setupUi
 from screen.inputPillNameScreen.main_inputPillnameScreen import PillNameScreen
 from screen.pillDetailScreen.main_detail_screen import DetailScreen
 
-sys.path.append(os.path.abspath('../klongyaa/Klongyaa'))
+sys.path.append(os.path.abspath('D:/klongyaa/Klongyaa'))
 
 
 mixer.init()
@@ -60,7 +60,7 @@ class HomeScreen(QDialog):
         pill_channel_buttons = []
         setupUi(self, UIHomeScreen, pill_channel_buttons, self.pill_channel_datas, self.config)
         haveToTake = []
-        self.checkTakePillThread(pill_channel_buttons, self.pill_channel_datas, haveToTake, self.config)
+        self.checkTakePillThread(pill_channel_buttons, self.pill_channel_datas, haveToTake, self.config, UIHomeScreen)
 
 
     def fetch_pill_names(self):
@@ -146,6 +146,237 @@ class HomeScreen(QDialog):
     #                     print('Take pill')
 
 
+    # def checkTakePill(self, n, pill_channel_buttons, pill_channel_datas, haveToTake, config):
+    #     for index in range(8):
+    #         pill_channel_btn = pill_channel_buttons[index]
+    #         pill_channel_data = pill_channel_datas[str(index)]
+
+    #         # ถ้ามีข้อมูลยาในช่อง
+    #         if len(pill_channel_data) != 0:
+    #             for time in pill_channel_data['timeToTake']:
+    #                 now = datetime.now()
+
+    #                 if time.split(":")[0] == "00":
+    #                     now += datetime.timedelta(days=1)
+
+    #                 nowDate = now.strftime("%Y-%m-%d")
+    #                 takePillDateTime = nowDate + " " + time
+    #                 timeObject = datetime.strptime(takePillDateTime, '%Y-%m-%d %H:%M')
+    #                 stringCompareTime = str(timeObject - now)
+
+    #                 # ถ้าเวลาใกล้ถึงกำหนด (ภายใน 5 นาที) และยังไม่ทานยา
+    #                 if not stringCompareTime.startswith('-1'):
+    #                     willTakeMinute = int(stringCompareTime.split(':')[1])
+    #                     willTakeHour = int(stringCompareTime.split(':')[0])
+
+    #                     if willTakeMinute <= 5 and willTakeMinute >= 0 and willTakeHour == 0:
+    #                         alreadyTakeFlag = False
+    #                         haveItemFlag = False
+    #                         for item in haveToTake:
+    #                             if item["channelId"] == index:
+    #                                 haveItemFlag = True
+    #                             if item["channelId"] == index and item["isTaken"]:
+    #                                 alreadyTakeFlag = True
+
+    #                         # ถ้าไม่มี item ใน haveToTake list
+    #                         if not haveItemFlag:
+    #                             takeTimeData = {
+    #                                 "channelId": index,
+    #                                 "time": time,
+    #                                 "isTaken": False,
+    #                                 "isLateMessageSended": False,
+    #                             }
+    #                             haveToTake.append(takeTimeData)
+
+    #                         # ถ้ายังไม่ได้หยิบยาและยังไม่ได้แสดง popup
+    #                         if not alreadyTakeFlag and not self.alreadyShownPopup[index]:
+    #                             if not self.isSoundOn:
+    #                                 playSound()
+    #                                 sendLineMessage(pill_channel_datas[str(index)], stringCompareTime, config)
+    #                                 self.isSoundOn = True
+
+    #                             # ซ่อนปุ่มทั้งหมด
+    #                             for button in pill_channel_buttons:
+    #                                 button.hide()
+
+    #                             # แสดงหน้าจอรายละเอียดการทานยา (popup)
+    #                             self.detailScreen = showPillDetailsScreen(pill_channel_data)
+    #                             __main__.widget.addWidget(self.detailScreen)
+    #                             __main__.widget.setCurrentIndex(__main__.widget.currentIndex() + 1)
+    #                             self.alreadyShownPopup[index] = True
+    #                         # (ปิดเสียงถ้าทานยาแล้ว)
+    #                         else:
+    #                             stopSound()
+
+    #                 # ถ้าเวลาทานยาผ่านไปแล้ว และยังไม่ได้ทานยา
+    #                 else:
+    #                     if checkIsTaken(index, haveToTake) == "not take" and checkIsSendLateMessage(index, haveToTake) == "not send":
+    #                         sendLateMessage(pill_channel_datas[str(index)], time, config)
+    #                         for no, item in enumerate(haveToTake):
+    #                             if item["channelId"] == index:
+    #                                 haveToTake[no]["isLateMessageSended"] = True
+
+    #                         # แสดงปุ่มทั้งหมดอีกครั้งและกลับไปหน้าหลัก
+    #                         for button in pill_channel_buttons:
+    #                             button.show()
+
+    #                         __main__.widget.removeWidget(self.detailScreen)
+    #                         __main__.widget.setCurrentIndex(0)  # กลับไปยังหน้าหลัก
+    #                         self.alreadyShownPopup[index] = False
+    #                         stopSound()
+
+    #     # การอัปเดตสถานะปุ่ม
+    #     flag = 0
+    #     for item in haveToTake:
+    #         if item["isTaken"] == False:
+    #             flag = 1
+
+    #     if len(haveToTake) != 0 and flag == 1:
+    #         for index in range(8):
+    #             pill_channel_btn = pill_channel_buttons[index]
+    #             pill_channel_data = pill_channel_datas[str(index)]
+
+    #             # ถ้าไม่มีข้อมูลในช่องยานั้น
+    #             if len(pill_channel_data) == 0:
+    #                 pill_channel_btn.setStyleSheet("background-color : #FBFADD")
+    #                 pill_channel_btn.setIcon(QtGui.QIcon())
+
+    #     else:
+    #         # ตั้งค่าข้อมูลในทุกช่องยาที่มีข้อมูล
+    #         for index in range(8):
+    #             pill_channel_btn = pill_channel_buttons[index]
+    #             pill_channel_data = pill_channel_datas[str(index)]
+
+    #             # ถ้ามีข้อมูลในช่อง
+    #             if pill_channel_datas.get(str(index)) and len(pill_channel_datas[str(index)]) != 0:
+    #                 font = QtGui.QFont()
+    #                 font.setPointSize(18)
+    #                 pill_channel_btn.setFont(font)
+    #                 channel_text = "ช่องที่ " + str(index + 1) + " \n" + pill_channel_datas[str(index)]["name"]
+    #                 pill_channel_btn.setText(channel_text)
+    #                 pill_channel_btn.setStyleSheet("background-color : #F8F37D")
+    #             else:
+    #                 # If don't have data in that slot
+    #                 icon_path = QtCore.QDir.current().absoluteFilePath("../shared/images/plus_icon.png")
+    #                 pill_channel_btn.setIcon(QtGui.QIcon(icon_path))
+    #                 pill_channel_btn.setIconSize(QtCore.QSize(45, 45))
+    #                 pill_channel_btn.setStyleSheet("background-color : #97C7F9")
+
+    # def checkTakePill(self, n, pill_channel_buttons, pill_channel_datas, haveToTake, config):
+    #     for index in range(8):
+    #         pill_channel_btn = pill_channel_buttons[index]
+    #         pill_channel_data = pill_channel_datas[str(index)]
+
+    #         # ถ้ามีข้อมูลยาในช่อง
+    #         if len(pill_channel_data) != 0:
+    #             for time in pill_channel_data['timeToTake']:
+    #                 now = datetime.now()
+
+    #                 if time.split(":")[0] == "00":
+    #                     now += datetime.timedelta(days=1)
+
+    #                 nowDate = now.strftime("%Y-%m-%d")
+    #                 takePillDateTime = nowDate + " " + time
+    #                 timeObject = datetime.strptime(takePillDateTime, '%Y-%m-%d %H:%M')
+    #                 time_diff = timeObject - now
+
+    #                 # ถ้าเวลาใกล้ถึงกำหนด (ภายใน 5 นาที) และยังไม่ทานยา
+    #                 if time_diff.total_seconds() >= 0:
+    #                     willTakeMinute = time_diff.seconds // 60 % 60
+    #                     willTakeHour = time_diff.seconds // 3600
+
+    #                     if willTakeMinute <= 5 and willTakeMinute >= 0 and willTakeHour == 0:
+    #                         alreadyTakeFlag = False
+    #                         haveItemFlag = False
+    #                         for item in haveToTake:
+    #                             if item["channelId"] == index:
+    #                                 haveItemFlag = True
+    #                             if item["channelId"] == index and item["isTaken"]:
+    #                                 alreadyTakeFlag = True
+
+    #                         # ถ้าไม่มี item ใน haveToTake list
+    #                         if not haveItemFlag:
+    #                             takeTimeData = {
+    #                                 "channelId": index,
+    #                                 "time": time,
+    #                                 "isTaken": False,
+    #                                 "isLateMessageSended": False,
+    #                             }
+    #                             haveToTake.append(takeTimeData)
+
+    #                         # ถ้ายังไม่ได้หยิบยาและยังไม่ได้แสดง popup
+    #                         if not alreadyTakeFlag and not self.alreadyShownPopup[index]:
+    #                             if not self.isSoundOn:
+    #                                 playSound()
+    #                                 sendLineMessage(pill_channel_datas[str(index)], str(time_diff), config)
+    #                                 self.isSoundOn = True
+
+    #                             # ซ่อนปุ่มทั้งหมด
+    #                             for button in pill_channel_buttons:
+    #                                 button.setVisible(False)
+
+    #                             # แสดงหน้าจอรายละเอียดการทานยา (popup)
+    #                             self.detailScreen = showPillDetailsScreen(pill_channel_data)
+    #                             __main__.widget.addWidget(self.detailScreen)
+    #                             __main__.widget.setCurrentIndex(__main__.widget.currentIndex() + 1)
+    #                             self.alreadyShownPopup[index] = True
+    #                         else:
+    #                             stopSound()
+
+    #                 # ถ้าเวลาทานยาผ่านไปแล้ว และยังไม่ได้ทานยา
+    #                 else:
+    #                     if checkIsTaken(index, haveToTake) == "not take" and checkIsSendLateMessage(index, haveToTake) == "not send":
+    #                         sendLateMessage(pill_channel_datas[str(index)], time, config)
+    #                         for no, item in enumerate(haveToTake):
+    #                             if item["channelId"] == index:
+    #                                 haveToTake[no]["isLateMessageSended"] = True
+
+    #                         # แสดงปุ่มทั้งหมดอีกครั้งและกลับไปหน้าหลัก
+    #                         for button in pill_channel_buttons:
+    #                             button.setVisible(True)
+
+    #                         __main__.widget.removeWidget(self.detailScreen)
+    #                         __main__.widget.setCurrentIndex(0)
+    #                         self.alreadyShownPopup[index] = False
+    #                         stopSound()
+
+    #     # การอัปเดตสถานะปุ่ม
+    #     flag = 0
+    #     for item in haveToTake:
+    #         if item["isTaken"] == False:
+    #             flag = 1
+
+    #     if len(haveToTake) != 0 and flag == 1:
+    #         for index in range(8):
+    #             pill_channel_btn = pill_channel_buttons[index]
+    #             pill_channel_data = pill_channel_datas[str(index)]
+
+    #             # ถ้าไม่มีข้อมูลในช่องยานั้น
+    #             if len(pill_channel_data) == 0:
+    #                 pill_channel_btn.setStyleSheet("background-color : #FBFADD")
+    #                 pill_channel_btn.setIcon(QtGui.QIcon())
+
+    #     else:
+    #         # ตั้งค่าข้อมูลในทุกช่องยาที่มีข้อมูล
+    #         for index in range(8):
+    #             pill_channel_btn = pill_channel_buttons[index]
+    #             pill_channel_data = pill_channel_datas[str(index)]
+
+    #             # ถ้ามีข้อมูลในช่อง
+    #             if pill_channel_datas.get(str(index)) and len(pill_channel_datas[str(index)]) != 0:
+    #                 font = QtGui.QFont()
+    #                 font.setPointSize(18)
+    #                 pill_channel_btn.setFont(font)
+    #                 channel_text = "ช่องที่ " + str(index + 1) + " \n" + pill_channel_datas[str(index)]["name"]
+    #                 pill_channel_btn.setText(channel_text)
+    #                 pill_channel_btn.setStyleSheet("background-color : #F8F37D")
+    #             else:
+    #                 # If don't have data in that slot
+    #                 icon_path = QtCore.QDir.current().absoluteFilePath("../shared/images/plus_icon.png")
+    #                 pill_channel_btn.setIcon(QtGui.QIcon(icon_path))
+    #                 pill_channel_btn.setIconSize(QtCore.QSize(45, 45))
+    #                 pill_channel_btn.setStyleSheet("background-color : #97C7F9")
+
     def checkTakePill(self, n, pill_channel_buttons, pill_channel_datas, haveToTake, config):
         for index in range(8):
             pill_channel_btn = pill_channel_buttons[index]
@@ -162,12 +393,12 @@ class HomeScreen(QDialog):
                     nowDate = now.strftime("%Y-%m-%d")
                     takePillDateTime = nowDate + " " + time
                     timeObject = datetime.strptime(takePillDateTime, '%Y-%m-%d %H:%M')
-                    stringCompareTime = str(timeObject - now)
+                    time_diff = timeObject - now
 
                     # ถ้าเวลาใกล้ถึงกำหนด (ภายใน 5 นาที) และยังไม่ทานยา
-                    if not stringCompareTime.startswith('-1'):
-                        willTakeMinute = int(stringCompareTime.split(':')[1])
-                        willTakeHour = int(stringCompareTime.split(':')[0])
+                    if time_diff.total_seconds() >= 0:
+                        willTakeMinute = time_diff.seconds // 60 % 60
+                        willTakeHour = time_diff.seconds // 3600
 
                         if willTakeMinute <= 5 and willTakeMinute >= 0 and willTakeHour == 0:
                             alreadyTakeFlag = False
@@ -192,21 +423,21 @@ class HomeScreen(QDialog):
                             if not alreadyTakeFlag and not self.alreadyShownPopup[index]:
                                 if not self.isSoundOn:
                                     playSound()
-                                    sendLineMessage(pill_channel_datas[str(index)], stringCompareTime, config)
+                                    sendLineMessage(pill_channel_datas[str(index)], str(time_diff), config)
                                     self.isSoundOn = True
 
                                 # ซ่อนปุ่มทั้งหมด
                                 for button in pill_channel_buttons:
-                                    button.hide()
+                                    button.setVisible(False)
 
                                 # แสดงหน้าจอรายละเอียดการทานยา (popup)
-                                self.detailScreen = showPillDetailsScreen(pill_channel_data)
+                                self.detailScreen = showTakePillScreen(pill_channel_data)
                                 __main__.widget.addWidget(self.detailScreen)
                                 __main__.widget.setCurrentIndex(__main__.widget.currentIndex() + 1)
                                 self.alreadyShownPopup[index] = True
-                            # (ปิดเสียงถ้าทานยาแล้ว)
                             else:
                                 stopSound()
+                                # self.refreshHomeScreen()
 
                     # ถ้าเวลาทานยาผ่านไปแล้ว และยังไม่ได้ทานยา
                     else:
@@ -218,12 +449,17 @@ class HomeScreen(QDialog):
 
                             # แสดงปุ่มทั้งหมดอีกครั้งและกลับไปหน้าหลัก
                             for button in pill_channel_buttons:
-                                button.show()
+                                button.setVisible(True)
 
-                            __main__.widget.removeWidget(self.detailScreen)
-                            __main__.widget.setCurrentIndex(0)  # กลับไปยังหน้าหลัก
+                            new_screen = HomeScreen(self.pill_channel_datas, self.config)
+    
+                            # แสดงหน้าจอใหม่
+                            __main__.widget.addWidget(new_screen)
+                            __main__.widget.setCurrentIndex(__main__.widget.indexOf(new_screen))
+                            new_screen.show()
                             self.alreadyShownPopup[index] = False
                             stopSound()
+                            # self.refreshHomeScreen()
 
         # การอัปเดตสถานะปุ่ม
         flag = 0
@@ -262,7 +498,26 @@ class HomeScreen(QDialog):
                     pill_channel_btn.setIconSize(QtCore.QSize(45, 45))
                     pill_channel_btn.setStyleSheet("background-color : #97C7F9")
 
-    def checkTakePillThread(self, pill_channel_buttons, pill_channel_datas,haveToTake,config):
+        # หลังจากเงื่อนไขจบแล้ว รีเฟรชหน้าจอ
+        # self.refreshHomeScreen()
+
+    # def refreshHomeScreen(self):
+    #     """
+    #     ฟังก์ชันนี้ใช้เพื่อรีเฟรชข้อมูลบนหน้าจอ HomeScreen
+    #     """
+    #     # ปิดหน้าจอปัจจุบัน
+    #     self.close()
+
+    #     # สร้างหน้าจอ HomeScreen ใหม่
+    #     new_screen = HomeScreen(self.pill_channel_datas, self.config)
+
+    #     # แสดงหน้าจอใหม่
+    #     __main__.widget.addWidget(new_screen)
+    #     __main__.widget.setCurrentIndex(__main__.widget.indexOf(new_screen))
+    #     new_screen.show()
+
+
+    def checkTakePillThread(self, pill_channel_buttons, pill_channel_datas, haveToTake, config, UIHomeScreen):
         self.thread = QThread()
         self.worker = Worker()
         self.worker.moveToThread(self.thread)
@@ -272,9 +527,8 @@ class HomeScreen(QDialog):
         self.thread.finished.connect(self.thread.deleteLater)
         self.worker.progress.connect(lambda n : self.checkTakePill(n, pill_channel_buttons, pill_channel_datas,haveToTake,config))
         self.thread.start()
-        
+            
 
-        
 isFirstLoop = True
 
 class Worker(QObject):
