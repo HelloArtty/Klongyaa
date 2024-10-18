@@ -30,7 +30,7 @@ class DetailScreen(QtWidgets.QDialog):
                             'pillsPerTime': pill.get('amountPerTime', ''),
                             'timeToTake': [time.get('time', '').replace('.', ':') for time in pill.get('times', [])]
                         }
-                        print(f"Fetched pill channel data(Detail): {json.dumps(pill_channel_data, indent=4)}")  # แสดงข้อมูลที่ดึงมาได้
+                        # print(f"Fetched pill channel data(Detail): {json.dumps(pill_channel_data, indent=4)}")  # แสดงข้อมูลที่ดึงมาได้
                         return pill_channel_data
                 print(f"No data found for channel ID: {self.channelId}")
                 return None
@@ -378,9 +378,9 @@ class DetailScreen(QtWidgets.QDialog):
     
     def deletePillData(self):
         id = self.pill_channel_data["id"]
-        print("Del id = ",id)
+        # print("Del id = ",id)
         channelId = self.pill_channel_data["channelId"]
-        print("Del channelId = ",channelId)
+        # print("Del channelId = ",channelId)
         print("ลบช่องที่ = ",channelId + 1 )
         url = f"{__main__.config['url']}/user/deletePillChannel/{id}"
         res = requests.delete(url)

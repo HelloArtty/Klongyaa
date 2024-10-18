@@ -18,22 +18,22 @@ config_path = "../Klongyaa/shared/data/mock/config.py"
 
 haveToTake = []
 
-def speech_recog_function():
-    mic = sr.Microphone(device_index=0)
-    recog = sr.Recognizer()
+# def speech_recog_function():
+#     mic = sr.Microphone(device_index=0)
+#     recog = sr.Recognizer()
 
-    with mic as source:
-        print("Listening...")
-        audio = recog.listen(source)
-        try:
-            text = recog.recognize_google(audio, language="th")
-            return text
-        except sr.UnknownValueError:
-            print("Could not understand the audio")
-            return None
-        except sr.RequestError as e:
-            print(f"Could not request results; {e}")
-            return None
+#     with mic as source:
+#         print("Listening...")
+#         audio = recog.listen(source)
+#         try:
+#             text = recog.recognize_google(audio, language="th")
+#             return text
+#         except sr.UnknownValueError:
+#             print("Could not understand the audio")
+#             return None
+#         except sr.RequestError as e:
+#             print(f"Could not request results; {e}")
+#             return None
 
 def save_userId(userId):
     global config_path
@@ -346,10 +346,12 @@ if __name__ == "__main__":
                     pill_channel_datas[id_str] = {
                         'id': pill.get('id', ''),
                         'channelId': int(id_str),
+                        'pillId': pill.get('medicine', {}).get('id', ''),
                         'name': pill.get('medicine', {}).get('name', ''),
                         'totalPills': pill.get('total', 0),
                         'pillsPerTime': pill.get('amountPerTime', 0),
-                        'timeToTake': [time.get('time', '').replace('.', ':') for time in pill.get('times', [])]
+                        'timeToTake': [time.get('time', '').replace('.', ':') for time in pill.get('times', [])],
+                        'img': pill.get('medicine', {}).get('img', '')
                     }
             print(f"Updated Pill Channel Data: {json.dumps(pill_channel_datas, indent=4)}")
         else:
@@ -366,10 +368,12 @@ if __name__ == "__main__":
             pill_channel_datas[id_str] = {
                 'id': pill.get('id', ''),
                 'channelId': int(id_str),
+                'pillId': pill.get('medicine', {}).get('id', ''),
                 'name': pill.get('medicine', {}).get('name', ''),
                 'totalPills': pill.get('total', 0),
                 'pillsPerTime': pill.get('amountPerTime', 0),
-                'timeToTake': [time.get('time', '').replace('.', ':') for time in pill.get('times', [])]
+                'timeToTake': [time.get('time', '').replace('.', ':') for time in pill.get('times', [])],
+                'img': pill.get('medicine', {}).get('img', '')
             }
     
     # แสดงผลลัพธ์
