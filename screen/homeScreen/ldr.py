@@ -1,44 +1,85 @@
-import random  # For simulating distance readings
+import RPi.GPIO as GPIO
 import time
 
-# Constants and variables
-TRIGGER_PIN = 18  # Placeholder for trigger pin (not used in mockup)
-ECHO_PIN = 24     # Placeholder for echo pin (not used in mockup)
-THRESHOLD_DISTANCE = 10  # Distance threshold to trigger pill detection (in cm)
+# ตั้งค่า GPIO แบบ BCM
+GPIO.setmode(GPIO.BCM)
 
-# Functions
+# ฟังก์ชันสำหรับการตั้งค่าเซ็นเซอร์ Ultrasonic
+def setup_ultrasonic(trig, echo):
+    GPIO.setup(trig, GPIO.OUT)
+    GPIO.setup(echo, GPIO.IN)
 
-def setup_ultrasonic_sensor():
-    # This would normally set up the sensor pins, but it's not needed here.
-    pass
+# ฟังก์ชันสำหรับการวัดระยะทางจาก Ultrasonic Sensor
+def get_distance(trig, echo):
+    # ส่งสัญญาณ 10us pulse ไปที่พิน Trig
+    GPIO.output(trig, True)
+    time.sleep(0.00001)
+    GPIO.output(trig, False)
 
-def get_distance():
-    """Simulates getting distance from an ultrasonic sensor."""
-    # Generate a random distance between 5 and 20 cm
-    return random.uniform(5, 20)
+    # วัดเวลาที่คลื่นเสียงใช้ไปกลับระหว่างเซ็นเซอร์กับสิ่งกีดขวาง
+    while GPIO.input(echo) == 0:
+        start_time = time.time()
+    while GPIO.input(echo) == 1:
+        end_time = time.time()
 
-def pick_pill_detection(led):
-    """Simulates pill detection based on ultrasonic sensor distance."""
+    # คำนวณระยะทางจากเวลาที่วัดได้
+    time_elapsed = end_time - start_time
+    distance = (time_elapsed * 34300) / 2  # คำนวณระยะทาง (เซนติเมตร)
+
+    return distance
+
+# ฟังก์ชันสำหรับตรวจจับการหยิบยาโดยใช้เซ็นเซอร์สองตัว
+def detect_pill_removal(trig_1, echo_1, trig_2, echo_2, led):
+    distance_1 = get_distance(trig_1, echo_1)
+    distance_2 = get_distance(trig_2, echo_2)
+    
+    print(f"Distance 1: {distance_1:.2f} cm, Distance 2: {distance_2:.2f} cm")
+
+    # ใช้ระยะของทั้งสองเซ็นเซอร์เพื่อตรวจสอบการหยิบยา
+    if distance_1 <= 7 or distance_2 <= 7:
+        print("Pill from slot 7 is being taken")
+        led.off()
+        return 7
+    elif (7 < distance_1 <= 14 or 7 < distance_2 <= 14):
+        print("Pill from slot 5 is being taken")
+        led.off()
+        return 5
+    elif (14 < distance_1 <= 21 or 14 < distance_2 <= 21):
+        print("Pill from slot 3 is being taken")
+        led.off()
+        return 3
+    elif (21 < distance_1 <= 28 or 21 < distance_2 <= 28):
+        print("Pill from slot 1 is being taken")
+        led.off()
+        return 1
+    else:
+        print("No pill is being taken")
+        led.on()
+        return None
+
+# ตัวอย่างการใช้งาน
+if __name__ == "__main__":
+    # ตั้งค่าพินของเซ็นเซอร์ตัวที่ 1 และ 2
+    trigPin_1 = 2
+    echoPin_1 = 3
+    trigPin_2 = 14
+    echoPin_2 = 15
+    led_pin = 23  # พินที่ใช้ควบคุม LED
+
+    # ตั้งค่า GPIO สำหรับ LED
+    led = GPIO.PWM(led_pin, 50)  # ใช้ PWM เพื่อควบคุม LED
+    led.start(0)
+
+    # ตั้งค่าเซ็นเซอร์ Ultrasonic
+    setup_ultrasonic(trigPin_1, echoPin_1)
+    setup_ultrasonic(trigPin_2, echoPin_2)
+
     try:
-        distance = get_distance()
-        print(f"ระยะห่าง: {distance:.2f} ซม.")
+        while True:
+            pill_slot = detect_pill_removal(trigPin_1, echoPin_1, trigPin_2, echoPin_2, led)
+            if pill_slot is not None:
+                print(f"Pill taken from slot {pill_slot}")
+            time.sleep(1)
 
-        if distance < THRESHOLD_DISTANCE:
-            print("ตรวจพบการหยิบยา")
-            # LED would turn off in actual implementation
-            return False
-        else:
-            print("ไม่มีการหยิบยา")
-            # LED would turn on in actual implementation
-            return True
-
-    except Exception as e:
-        print(f"เกิดข้อผิดพลาดใน pick_pill_detection: {e}")
-        return False
-
-# Main loop
-setup_ultrasonic_sensor()  # Setup function, not used in the mockup
-
-while True:
-    result = pick_pill_detection(None)  # Pass None since we're not using an actual LED
-    time.sleep(1)
+    except KeyboardInterrupt:
+        GPIO.cleanup()  # ล้างการตั้งค่า GPIO เมื่อหยุดการทำงาน

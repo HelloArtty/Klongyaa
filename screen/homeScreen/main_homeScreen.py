@@ -91,39 +91,36 @@ class HomeScreen(QDialog):
                 __main__.widget.addWidget(InputScreen)
                 __main__.widget.setCurrentIndex(__main__.widget.currentIndex() + 1)
 
-    # def ledLightFunction(self, index) :
-    #     alreadyTake = False
-    #     for no, item in enumerate(__main__.haveToTake) :
-    #         if item["id"] == no and item["isTaken"]:
-    #             alreadyTake = True
-                
-    #     light = __main__.lightList[str(index)]
-    #     if light["dout"] != -1 and light["pdPin"] != -1 and not alreadyTake:
-    #     # if True:
-    #         if light["firstWeightValue"] == -1:
-    #             dout = __main__.lightList[str(index)]["dout"]
-    #             pdPin = __main__.lightList[str(index)]["pdPin"]
-    #             value = get_first_load_value(dout,pdPin) # Don't forget to adding this Register Pin parameter
-    #             __main__.lightList[str(index)]["firstWeightValue"] = value
-    #         firstWeightValue = __main__.lightList[str(index)]["firstWeightValue"]
-    #         dout = __main__.lightList[str(index)]["dout"]
-    #         pdPin = __main__.lightList[str(index)]["pdPin"]
-    #         led = __main__.lightList[str(index)]["led"]
-    #         isLightOn = pick_pill_detection(firstWeightValue, dout, pdPin, led) # Don't forget to adding this Register Pin parameter
-    #         if not isLightOn :
-    #             stopSound()
-    #             __main__.lightList[str(index)]["firstLightValue"] = -1
-    #             print("Not light on")
-    #             for no, item in enumerate(__main__.haveToTake) :
-    #                 if item["id"] == index :
-    #                     __main__.haveToTake[no]["isTaken"] = True
-    #                     res = requests.post(__main__.config["url"] + "/user/addHistory", json={
-    #                             "channelID": str(item["id"]),
-    #                             "lineUID": __main__.config["userId"],
-    #                             "task": "Take pill"
-    #                             })
-    #                     print(f'res : {res}')
-    #                     print('Take pill')
+
+    # led  function
+
+    def ledLightFunction(self, index):
+    alreadyTaken = False
+    for no, item in enumerate(__main__.haveToTake):
+        if item["id"] == no and item["isTaken"]:
+            alreadyTaken = True
+
+    light = __main__.lightList[str(index)]
+    if light["trigPin_1"] != -1 and light["echoPin_1"] != -1 and light["trigPin_2"] != -1 and light["echoPin_2"] != -1 and not alreadyTaken:
+        # ตรวจจับการหยิบยาโดยใช้เซ็นเซอร์ทั้งสองตัว
+        pill_slot = detect_pill_removal(light["trigPin_1"], light["echoPin_1"], light["trigPin_2"], light["echoPin_2"], light["led"])
+
+        if pill_slot is not None:
+            stopSound()
+            print(f"Pill from slot {pill_slot} has been taken")
+            for no, item in enumerate(__main__.haveToTake):
+                if item["id"] == index:
+                    __main__.haveToTake[no]["isTaken"] = True
+                    # บันทึกการหยิบยา
+                    res = requests.post(__main__.config["url"] + "/pill-data/addLogHistory", json={
+                        "channelID": str(item["id"]),
+                        "lineUID": __main__.config["userId"],
+                        "task": f"Take pill from slot {pill_slot}"
+                    })
+                    print(f'Response: {res}')
+                    print(f'Pill from slot {pill_slot} has been taken')
+
+
 
     def checkTakePill(self, n, pill_channel_buttons, pill_channel_datas):
         checkTakePill(self, n, pill_channel_buttons, pill_channel_datas, __main__.haveToTake, self.config)
