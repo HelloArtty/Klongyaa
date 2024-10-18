@@ -94,31 +94,31 @@ class HomeScreen(QDialog):
 
     # led  function
 
-    def ledLightFunction(self, index):
-    alreadyTaken = False
-    for no, item in enumerate(__main__.haveToTake):
-        if item["id"] == no and item["isTaken"]:
-            alreadyTaken = True
+    def ledLightFunction(self, index):k
+        alreadyTaken = False
+        for no, item in enumerate(__main__.haveToTake):
+            if item["id"] == no and item["isTaken"]:
+                alreadyTaken = True
 
-    light = __main__.lightList[str(index)]
-    if light["trigPin_1"] != -1 and light["echoPin_1"] != -1 and light["trigPin_2"] != -1 and light["echoPin_2"] != -1 and not alreadyTaken:
-        # ตรวจจับการหยิบยาโดยใช้เซ็นเซอร์ทั้งสองตัว
-        pill_slot = detect_pill_removal(light["trigPin_1"], light["echoPin_1"], light["trigPin_2"], light["echoPin_2"], light["led"])
+        light = __main__.lightList[str(index)]
+        if light["trigPin_1"] != -1 and light["echoPin_1"] != -1 and light["trigPin_2"] != -1 and light["echoPin_2"] != -1 and not alreadyTaken:
+            # ตรวจจับการหยิบยาโดยใช้เซ็นเซอร์ทั้งสองตัว
+            pill_slot = detect_pill_removal(light["trigPin_1"], light["echoPin_1"], light["trigPin_2"], light["echoPin_2"], light["led"])
 
-        if pill_slot is not None:
-            stopSound()
-            print(f"Pill from slot {pill_slot} has been taken")
-            for no, item in enumerate(__main__.haveToTake):
-                if item["id"] == index:
-                    __main__.haveToTake[no]["isTaken"] = True
-                    # บันทึกการหยิบยา
-                    res = requests.post(__main__.config["url"] + "/pill-data/addLogHistory", json={
-                        "channelID": str(item["id"]),
-                        "lineUID": __main__.config["userId"],
-                        "task": f"Take pill from slot {pill_slot}"
-                    })
-                    print(f'Response: {res}')
-                    print(f'Pill from slot {pill_slot} has been taken')
+            if pill_slot is not None:
+                stopSound()
+                print(f"Pill from slot {pill_slot} has been taken")
+                for no, item in enumerate(__main__.haveToTake):
+                    if item["id"] == index:
+                        __main__.haveToTake[no]["isTaken"] = True
+                        # บันทึกการหยิบยา
+                        res = requests.post(__main__.config["url"] + "/pill-data/addLogHistory", json={
+                            "channelID": str(item["id"]),
+                            "lineUID": __main__.config["userId"],
+                            "task": f"Take pill from slot {pill_slot}"
+                        })
+                        print(f'Response: {res}')
+                        print(f'Pill from slot {pill_slot} has been taken')
 
 
 

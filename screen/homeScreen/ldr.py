@@ -56,30 +56,3 @@ def detect_pill_removal(trig_1, echo_1, trig_2, echo_2, led):
         print("No pill is being taken")
         led.on()
         return None
-
-# ตัวอย่างการใช้งาน
-if __name__ == "__main__":
-    # ตั้งค่าพินของเซ็นเซอร์ตัวที่ 1 และ 2
-    trigPin_1 = 2
-    echoPin_1 = 3
-    trigPin_2 = 14
-    echoPin_2 = 15
-    led_pin = 23  # พินที่ใช้ควบคุม LED
-
-    # ตั้งค่า GPIO สำหรับ LED
-    led = GPIO.PWM(led_pin, 50)  # ใช้ PWM เพื่อควบคุม LED
-    led.start(0)
-
-    # ตั้งค่าเซ็นเซอร์ Ultrasonic
-    setup_ultrasonic(trigPin_1, echoPin_1)
-    setup_ultrasonic(trigPin_2, echoPin_2)
-
-    try:
-        while True:
-            pill_slot = detect_pill_removal(trigPin_1, echoPin_1, trigPin_2, echoPin_2, led)
-            if pill_slot is not None:
-                print(f"Pill taken from slot {pill_slot}")
-            time.sleep(1)
-
-    except KeyboardInterrupt:
-        GPIO.cleanup()  # ล้างการตั้งค่า GPIO เมื่อหยุดการทำงาน
