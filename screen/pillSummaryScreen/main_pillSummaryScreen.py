@@ -9,7 +9,6 @@ from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QApplication, QDialog
 # from screen.inputPillNameScreen.gen.gen_input_voice_screen_again import *
 # from screen.pillSummaryScreen.gen.gen_pill_summary_screen import *
-from screen.pillSummaryScreen.mock.pill_data import pill_data
 from shared.main_success_save_screen import SuccessSaveScreen
 
 globalPillData = {}
@@ -356,33 +355,25 @@ class PillNameScreen(QDialog):
         QtCore.QMetaObject.connectSlotsByName(background_confirm_pill_name)
 
     def navigate_left(self):
-        if not self.pillNames:  # Check if the list is empty
+        if not self.pillNames:
             return
-
-        # Update the current pill index
         self.current_pill_index = (self.current_pill_index - 1) % len(self.pillNames)
-
-        # Update the label and input ID
         self.update_display()
 
     def navigate_right(self):
-        if not self.pillNames:  # Check if the list is empty
+        if not self.pillNames:
             return
-
-        # Update the current pill index
         self.current_pill_index = (self.current_pill_index + 1) % len(self.pillNames)
-
-        # Update the label and input ID
         self.update_display()
 
     def update_display(self):
         self.label_pill_name.setText(self.pillNames[self.current_pill_index])
         if self.current_pill_index < len(self.pillID):
             self.inputPillID = self.pillID[self.current_pill_index]
-        # else:
-        #     print("Error: current_pill_index is out of range for pillID")
+        else:
+            print("Error: current_pill_index is out of range for pillID")
 
-        # print(f"Current index: {self.current_pill_index}, Pill Names Length: {len(self.pillNames)}, Pill IDs Length: {len(self.pillID)}")
+        print(f"Current index: {self.current_pill_index}, Pill Names Length: {len(self.pillNames)}, Pill IDs Length: {len(self.pillID)}")
 
     def retranslateUi(self, background_confirm_pill_name):
         _translate = QtCore.QCoreApplication.translate
