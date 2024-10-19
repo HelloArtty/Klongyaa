@@ -170,49 +170,6 @@ class HomeScreen(QDialog):
         new_screen.show()
         self.alreadyShownPopup[index] = False
         stopSound()
-    def ledLightFunction(self, index, haveToTake, pill_data, config, timeWillTake, pill_channel_buttons):
-        alreadyTake = False
-        for no, item in enumerate(haveToTake):
-            if item["isTaken"]:
-                alreadyTake = True
-                print('Already taken:', haveToTake)
-
-        if not alreadyTake:
-            light = __main__.lightList[str(index)]
-            if light["trigPin_1"] != -1 and light["trigPin_2"] != 1 and light["echoPin_1"] != -1 and light["echoPin_1"]:
-                trigPin_1 = light["trigPin_1"]
-                echoPin_1 = light["echoPin_1"]
-                trigPin_2 = light["trigPin_2"]
-                echoPin_2 = light["echoPin_2"]
-                led = light["led"]
-                sensor_1 = DistanceSensor(echo=echoPin_1, trigger=trigPin_1)
-                sensor_2 = DistanceSensor(echo=echoPin_2, trigger=trigPin_2)
-                isLightOn = detect_pill_removal(sensor_1, sensor_2, led, index)
-
-                if isLightOn:  # เมื่อมีการหยิบยา
-                    print('Take pill')
-                    stopSound()
-
-                    # อัปเดตสถานะการทานยา
-                    for no, item in enumerate(haveToTake):
-                        if item["channelId"] == index:
-                            haveToTake[no]["isTaken"] = True
-                            item['isTaken'] = True
-
-                    pill_name = pill_data['name']
-                    pill_amount_pertime = pill_data['pillsPerTime']
-                    text = f'กินยา {pill_name} จำนวน {pill_amount_pertime} เม็ดแล้วเมื่อเวลา {timeWillTake}'
-                    print(text)
-
-        # กลับไปหน้าหลัก
-        for button in pill_channel_buttons:
-            button.setVisible(True)
-        new_screen = HomeScreen(self.pill_channel_datas, self.config)
-        __main__.widget.addWidget(new_screen)
-        __main__.widget.setCurrentIndex(__main__.widget.indexOf(new_screen))
-        new_screen.show()
-        self.alreadyShownPopup[index] = False
-        stopSound()
     
 
     def checkTakePill(self, n, pill_channel_buttons, pill_channel_datas, haveToTake, config):
