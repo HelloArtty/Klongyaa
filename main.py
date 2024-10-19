@@ -385,7 +385,10 @@ if __name__ == "__main__":
     widget = QStackedWidget()
     widget.setWindowTitle("GUI - KLONG_YAA")
     widget.addWidget(screen)
-    widget.setFixedWidth(800)
-    widget.setFixedHeight(480)
+    # widget.setFixedWidth(800)
+    # widget.setFixedHeight(480)
+    
+    #ทำเป็นFull Screen
+    widget.showFullScreen()
     widget.show()
     sys.exit(app.exec_())
