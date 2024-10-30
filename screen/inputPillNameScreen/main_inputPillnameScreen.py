@@ -31,6 +31,7 @@ class PillNameScreen(QDialog):
         globalPillData = pillData if pillData is not None else {}
         self.pillNames = pillNames if pillNames is not None else []
         self.pillID = pillID if pillID is not None else []
+        self.pillID = pillID if pillID is not None else []
         self.inputPillName = globalPillData.get("name", "")
         self.inputPillID = globalPillData.get("pillId", "")
         self.setupUi(self)
@@ -44,30 +45,28 @@ class PillNameScreen(QDialog):
         self.no_channel = QtWidgets.QLabel(background_confirm_pill_name)
         self.no_channel.setGeometry(QtCore.QRect(40, 30, 190, 70))
         font = QtGui.QFont()
-        font.setFamily("JasmineUPC")
+        font.setFamily("TH Sarabun New")
         font.setPointSize(36)
-        font.setBold(False)
-        font.setItalic(False)
-        font.setWeight(9)
         self.no_channel.setFont(font)
-        self.no_channel.setStyleSheet("background-color: #C5E1FF; font: 75 36pt \"JasmineUPC\"; border-radius: 25px; color: #070021;")
+        self.no_channel.setStyleSheet("background-color: #C5E1FF; font: 75 36pt \"TH Sarabun New\"; font-weight: bold; border-radius: 25px; color: #070021; ")
         self.no_channel.setAlignment(QtCore.Qt.AlignCenter)
         self.no_channel.setObjectName("no_channel")
 
         self.label_1 = QtWidgets.QLabel(background_confirm_pill_name)
-        self.label_1.setGeometry(QtCore.QRect(245, 30, 350, 70))
-        self.label_1.setStyleSheet("font: 34pt \"JasmineUPC\";")
-        self.label_1.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_1.setGeometry(QtCore.QRect(245, 30, 450, 70))
+        self.label_1.setStyleSheet("font: 36pt \"TH Sarabun New\"; font-weight: bold;")
+        self.label_1.setAlignment(QtCore.Qt.AlignLeft)
         self.label_1.setObjectName("label_1")
         
+        #แก้
         # Label to display the selected pill name
         self.label_pill_name = QtWidgets.QLabel(background_confirm_pill_name)
-        self.label_pill_name.setGeometry(QtCore.QRect(222, 150, 350, 75))
-        self.label_pill_name.setStyleSheet("font: 34pt \"JasmineUPC\";")
+        self.label_pill_name.setGeometry(QtCore.QRect(120, 150, 560, 150))
+        self.label_pill_name.setStyleSheet("font: 30pt \"TH Sarabun New\"; background-color: white; border: 2px solid black; font-weight: bold;")
         self.label_pill_name.setAlignment(QtCore.Qt.AlignCenter)
         self.label_pill_name.setObjectName("label_pill_name")
         
-
+        
         # Set initial selection
         self.current_pill_index = 0
         if isinstance(self.pillNames, list) and len(self.pillNames) > 0:
@@ -75,20 +74,20 @@ class PillNameScreen(QDialog):
         elif isinstance(self.pillNames, dict):
             # แก้เป็นการเข้าถึง dictionary โดยตรง
             self.label_pill_name.setText(self.pillNames.get("name", ""))
-
+            
 
         # Left arrow button
         self.btn_left = QtWidgets.QPushButton(background_confirm_pill_name)
-        self.btn_left.setGeometry(QtCore.QRect(100, 150, 100, 75))
+        self.btn_left.setGeometry(QtCore.QRect(15, 185, 100, 75))
         self.btn_left.setText("<")
-        self.btn_left.setStyleSheet("font: 34pt \"JasmineUPC\";")
+        self.btn_left.setStyleSheet("font: 36pt \"TH Sarabun New\"; background-color: white; font-weight: bold; ")
         self.btn_left.setObjectName("btn_left")
 
         # Right arrow button
         self.btn_right = QtWidgets.QPushButton(background_confirm_pill_name)
-        self.btn_right.setGeometry(QtCore.QRect(600, 150, 100, 75))
+        self.btn_right.setGeometry(QtCore.QRect(685, 185, 100, 75))
         self.btn_right.setText(">")
-        self.btn_right.setStyleSheet("font: 34pt \"JasmineUPC\";")
+        self.btn_right.setStyleSheet("font: 36pt \"TH Sarabun New\"; background-color: white; font-weight: bold;")
         self.btn_right.setObjectName("btn_right")
 
         # Connect buttons to functions
@@ -97,7 +96,7 @@ class PillNameScreen(QDialog):
 
         self.button_correct_pill_name = QtWidgets.QToolButton(background_confirm_pill_name)
         self.button_correct_pill_name.setGeometry(QtCore.QRect(295, 375, 200, 90))
-        self.button_correct_pill_name.setStyleSheet("QToolButton#button_correct_pill_name { font: 75 36pt \"JasmineUPC\"; background-color:#24BD73; color: #ffffff; border-radius:20px; } QToolButton#button_correct_pill_name:hover { font: 75 36pt \"JasmineUPC\"; background-color:#23B36D; color: #ffffff; border-radius:20px; }")
+        self.button_correct_pill_name.setStyleSheet("QToolButton#button_correct_pill_name { font: 75 36pt \"TH Sarabun New\"; background-color:#24BD73; color: #ffffff; border-radius:20px; font-weight: bold; } QToolButton#button_correct_pill_name:hover { font: 75 36pt \"TH Sarabun New\"; background-color:#23B36D; color: #ffffff; border-radius:20px; font-weight: bold; }")
         self.button_correct_pill_name.setObjectName("button_correct_pill_name")
         self.button_correct_pill_name.clicked.connect(self.goToMainTotalPillsNPertimeScreen)
 
@@ -128,7 +127,7 @@ class PillNameScreen(QDialog):
 
         background_confirm_pill_name.setWindowTitle(_translate("background_confirm_pill_name", "Dialog"))
         self.no_channel.setText(_translate("background_confirm_pill_name", channelID))
-        self.label_1.setText(_translate("background_confirm_pill_name", "กรุณาเลือกชื่อยาของท่าน"))
+        self.label_1.setText(_translate("background_confirm_pill_name", "ใส่ชื่อยาของท่าน"))
         self.button_correct_pill_name.setText(_translate("background_confirm_pill_name", "ถัดไป"))
 
     def goToMainTotalPillsNPertimeScreen(self):

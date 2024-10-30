@@ -2,7 +2,6 @@ import json
 import sys
 
 import requests
-import speech_recognition as sr
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import (QApplication, QDialog, QDialogButtonBox,
                              QGridLayout, QHBoxLayout, QLabel, QLineEdit,
@@ -33,7 +32,6 @@ def save_userId(user_info):
                 file.write(f'    "username": "{user_info["username"]}",\n')
             else:
                 file.write(line)
-
 
 def show_confirmation_dialog(email):
     dialog = QDialog()
@@ -352,7 +350,7 @@ if __name__ == "__main__":
                         'timeToTake': [time.get('time', '').replace('.', ':') for time in pill.get('times', [])],
                         'img': pill.get('medicine', {}).get('img', '')
                     }
-            print(f"Updated Pill Channel Data: {json.dumps(pill_channel_datas, indent=4)}")
+            # print(f"Updated Pill Channel Data: {json.dumps(pill_channel_datas, indent=4)}")
         else:
             print(f"Error updating pill data: {res.status_code}")
 
@@ -376,7 +374,7 @@ if __name__ == "__main__":
             }
     
     # แสดงผลลัพธ์
-    print(f"Pill Channel Data: {json.dumps(pill_channel_datas, indent=4)}")
+    # print(f"Pill Channel Data: {json.dumps(pill_channel_datas, indent=4)}")
     defaultfont = QtGui.QFont('Arial', 8)
     defaultfont.setPixelSize(8)
     QtWidgets.QApplication.setStyle("Windows")
@@ -385,10 +383,8 @@ if __name__ == "__main__":
     widget = QStackedWidget()
     widget.setWindowTitle("GUI - KLONG_YAA")
     widget.addWidget(screen)
-    # widget.setFixedWidth(800)
-    # widget.setFixedHeight(480)
-    
-    #ทำเป็นFull Screen
-    widget.showFullScreen()
+    widget.setFixedWidth(800)
+    widget.setFixedHeight(480)
+    # widget.showFullScreen()
     widget.show()
     sys.exit(app.exec_())

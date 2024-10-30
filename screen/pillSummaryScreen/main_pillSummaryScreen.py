@@ -7,8 +7,7 @@ import requests
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QApplication, QDialog
-# from screen.inputPillNameScreen.gen.gen_input_voice_screen_again import *
-# from screen.pillSummaryScreen.gen.gen_pill_summary_screen import *
+
 from shared.main_success_save_screen import SuccessSaveScreen
 
 globalPillData = {}
@@ -700,6 +699,7 @@ class AddSummaryTimeScreen(QDialog):
         self.header_text.setText(_translate("background_confirm_times_to_take_pill", "เวลาที่ต้องทานยา"))
         self.success_button.setText(_translate("background_confirm_times_to_take_pill", "เสร็จสิ้น"))
 
+    
     def editTimeToTakePill(self, objIndex):
         global globalPillData
 

@@ -4,7 +4,7 @@ import requests
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
-def showTakePillScreen(pill_channel_data):
+def showTakePillScreen(pill_channel_data, on_confirm_callback):
     # Create a QWidget for the full-screen view
     pill_details_screen = QtWidgets.QWidget()
     pill_details_screen.setFixedSize(800, 480)
@@ -28,35 +28,15 @@ def showTakePillScreen(pill_channel_data):
     pill_amount_label.setAlignment(QtCore.Qt.AlignCenter)
     main_layout.addWidget(pill_amount_label)
 
-    # Create a layout for images
-    image_layout = QtWidgets.QGridLayout()  # Use QGridLayout to display images in a grid
-    image_widget = QtWidgets.QWidget()
-    image_widget.setGeometry(50, 200, 700, 200)
-    image_widget.setLayout(image_layout)
+    # Add a button for confirming pill intake
+    confirm_button = QtWidgets.QPushButton("กินยาแล้ว")
+    confirm_button.setFont(QtGui.QFont("Arial", 18))
+    confirm_button.setStyleSheet("background-color: #4CAF50; color: white;")
     
-    pillsPerTime = int(pill_channel_data['pillsPerTime'])
-    for i in range(pillsPerTime):
-        img_label = QtWidgets.QLabel()
-        img_pixmap = QtGui.QPixmap()
+    # Connect the button with the callback function
+    confirm_button.clicked.connect(on_confirm_callback)
+    
+    main_layout.addWidget(confirm_button)
 
-        # Check if the image URL is present
-        if 'img' in pill_channel_data and pill_channel_data['img']:
-            print(pill_channel_data['img'])
-            img_pixmap.loadFromData(requests.get(pill_channel_data.get('img')).content)
-        else:
-            # Load default icon if no image is provided
-            img_pixmap.load("../Klongyaa/shared/images/pill.png")
-
-        # img_label.setStyleSheet("background-color: #F8F37D;")
-        img_label.setPixmap(img_pixmap.scaled(150, 150, QtCore.Qt.KeepAspectRatio))
-        
-        row = i // 5
-        col = i % 5
-        image_layout.addWidget(img_label, row, col)
-        
-    # Center the images layout
-    image_layout.setAlignment(QtCore.Qt.AlignCenter)
-    main_layout.addWidget(image_widget)
-
-    # Return the pill details screen instead of showing it directly
     return pill_details_screen
+
