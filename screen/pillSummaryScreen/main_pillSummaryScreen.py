@@ -8,6 +8,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QApplication, QDialog
 
+from shared.api.getMedicines import fetch_pill_names
 from shared.main_success_save_screen import SuccessSaveScreen
 
 globalPillData = {}
@@ -15,17 +16,18 @@ globalInputPillName = ""
 mockNum = 0
 
 class PillSummaryScreen(QDialog):
-    def __init__(self, pillData=None, pillNames=None, pillID=None, parent=None):
+    def __init__(self, pillData=None, pillNames=None, pillID=None, pillNamesEng=None, parent=None):
         super().__init__(parent)
         global globalPillData
         globalPillData = pillData if pillData is not None else {}
         self.pillNames = pillNames if pillNames is not None else []
         self.pillID = pillID if pillID is not None else []
+        self.pillNamesEng = pillNamesEng if pillNamesEng is not None else []
+        
         self.inputPillName = globalPillData.get("name", "")
         self.inputPillID = globalPillData.get("pillId", "")
         self.setupUi(self)
         self.button_save_pill_summary.clicked.connect(self.savePillSummary)
-        # print(f"ข้อมูลยา = {globalPillData}")
         
         self.button_edit_pill_name.clicked.connect(self.editPillName)
         self.button_edit_amount_pill.clicked.connect(self.editAmountPill)
@@ -58,7 +60,7 @@ class PillSummaryScreen(QDialog):
         # Header label
         self.text_header_summary_screen = QtWidgets.QLabel(background_summary_screen)
         self.text_header_summary_screen.setGeometry(QtCore.QRect(290, 20, 375, 60))
-        self.text_header_summary_screen.setStyleSheet("font: 75 34pt \"JasmineUPC\";")
+        self.text_header_summary_screen.setStyleSheet("font: 36pt \"TH Sarabun New\"; font-weight: bold;")
         self.text_header_summary_screen.setAlignment(QtCore.Qt.AlignCenter)
         self.text_header_summary_screen.setObjectName("text_header_summary_screen")
 
@@ -81,14 +83,15 @@ class PillSummaryScreen(QDialog):
         # ชื่อยา
         self.question_pill_name = QtWidgets.QLabel("Pill Name", self.scrollAreaWidgetContents)
         self.question_pill_name.setMinimumSize(250, 35)
-        font = QtGui.QFont("JasmineUPC", 30)
+        font = QtGui.QFont("TH Sarabun New", 36)
         self.question_pill_name.setFont(font)
-        self.question_pill_name.setStyleSheet("background-color: #C5E1FF; ;border-radius: 25px; color: #070021;")
+        self.question_pill_name.setStyleSheet("background-color: #C5E1FF; ;border-radius: 25px; color: #070021; font-weight: bold;")
         self.question_pill_name.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter )
         self.question_pill_name.setContentsMargins(20, 0, 0, 0) 
         self.gridLayout_2.addWidget(self.question_pill_name, currentRow, 0, 1, 1)
+        
         # รายละเอียดชื่อยา
-        self.show_pill_name = self.createLabel("", 200, 40, "font: 75 32pt \"JasmineUPC\"; color: #070021; border: none; margin-right:50px;", self.scrollAreaWidgetContents)
+        self.show_pill_name = self.createLabel("", 200, 40, "font: 36pt \"TH Sarabun New\"; font-weight: bold; color: #070021; border: none; margin-right:50px;", self.scrollAreaWidgetContents)
         self.gridLayout_2.addWidget(self.show_pill_name, currentRow, 1, 1, 1)
         # แก้ไข
         self.button_edit_pill_name = self.createToolButton("edit2.png", self.scrollAreaWidgetContents)
@@ -100,13 +103,13 @@ class PillSummaryScreen(QDialog):
         if globalPillData["totalPills"] > 0:
             self.question_total_pills = QtWidgets.QLabel("จำนวนยาทั้งหมด", self.scrollAreaWidgetContents)
             self.question_total_pills.setMinimumSize(250, 35)  # กำหนดขนาดขั้นต่ำ
-            font = QtGui.QFont("JasmineUPC", 30)  # กำหนดฟอนต์
+            font = QtGui.QFont("TH Sarabun New", 36)  # กำหนดฟอนต์
             self.question_total_pills.setFont(font)  # ตั้งค่าให้กับ QLabel
-            self.question_total_pills.setStyleSheet("background-color: #C5E1FF; border-radius: 25px; color: #070021;")  # ตั้งค่ารูปแบบ
+            self.question_total_pills.setStyleSheet("background-color: #C5E1FF; border-radius: 25px; color: #070021; font-weight: bold;")  # ตั้งค่ารูปแบบ
             self.question_total_pills.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)  # จัดเรียงชิดซ้ายและกลางแนวตั้ง
             self.question_total_pills.setContentsMargins(20, 0, 0, 0)  # ตั้งค่าระยะห่าง
             self.gridLayout_2.addWidget(self.question_total_pills, currentRow, 0, 1, 1)  # เพิ่มเข้าไปใน layout
-            self.show_total_pills = self.createLabel(f"{globalPillData['totalPills']} เม็ด", 200, 40, "font: 75 34pt \"JasmineUPC\"; color: #070021; margin-right:50px;", self.scrollAreaWidgetContents)
+            self.show_total_pills = self.createLabel(f"{globalPillData['totalPills']} เม็ด", 200, 40, "font: 75 36pt \"TH Sarabun New\"; font-weight: bold; color: #070021; margin-right:50px;", self.scrollAreaWidgetContents)
             self.gridLayout_2.addWidget(self.show_total_pills, currentRow, 1, 1, 1)
             self.button_edit_total_pills = self.createToolButton("edit2.png", self.scrollAreaWidgetContents)
             self.gridLayout_2.addWidget(self.button_edit_total_pills, currentRow, 3, 1, 1)
@@ -116,13 +119,13 @@ class PillSummaryScreen(QDialog):
         # Amount per dose section
         self.question_amount_pill = QtWidgets.QLabel("จำนวนยา", self.scrollAreaWidgetContents)
         self.question_amount_pill.setMinimumSize(350, 35)  # กำหนดขนาดขั้นต่ำ
-        font = QtGui.QFont("JasmineUPC", 30)  # กำหนดฟอนต์
+        font = QtGui.QFont("TH Sarabun New", 36)  # กำหนดฟอนต์
         self.question_amount_pill.setFont(font)  # ตั้งค่าให้กับ QLabel
-        self.question_amount_pill.setStyleSheet("background-color: #C5E1FF; border-radius: 25px; color: #070021;")  # ตั้งค่ารูปแบบ
+        self.question_amount_pill.setStyleSheet("background-color: #C5E1FF; border-radius: 25px; color: #070021; font-weight: bold;")  # ตั้งค่ารูปแบบ
         self.question_amount_pill.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)  # จัดเรียงชิดซ้ายและกลางแนวตั้ง
         self.question_amount_pill.setContentsMargins(20, 0, 0, 0)  # ตั้งค่าระยะห่าง
         self.gridLayout_2.addWidget(self.question_amount_pill, currentRow, 0, 1, 1)  # เพิ่มเข้าไปใน layout
-        self.show_amount_pill = self.createLabel("", 200, 40, "font: 75 34pt \"JasmineUPC\"; color: #070021; margin-right:50px;", self.scrollAreaWidgetContents)
+        self.show_amount_pill = self.createLabel("", 200, 40, "font: 36pt \"TH Sarabun New\"; color: #070021; margin-right:50px; font-weight: bold;", self.scrollAreaWidgetContents)
         self.gridLayout_2.addWidget(self.show_amount_pill, currentRow, 1, 1, 1)
         self.button_edit_amount_pill = self.createToolButton("edit2.png", self.scrollAreaWidgetContents)
         self.gridLayout_2.addWidget(self.button_edit_amount_pill, currentRow, 3, 1, 1)
@@ -134,10 +137,10 @@ class PillSummaryScreen(QDialog):
             # สร้าง Label สำหรับเวลาทานยา
             timeToTakePillLabel = self.createLabel(
                 f"เวลาที่ {index + 1}", 250, 40,
-                "background-color: #C5E1FF; border-radius: 25px; color: #070021;",
+                "background-color: #C5E1FF; border-radius: 25px; color: #070021; font: 36pt \"TH Sarabun New\"; font-weight: bold;",
                 self.scrollAreaWidgetContents
             )
-            timeToTakePillLabel.setFont(QtGui.QFont("JasmineUPC", 30))  # ตั้งค่าฟอนต์
+            timeToTakePillLabel.setFont(QtGui.QFont("TH Sarabun New", 36))  # ตั้งค่าฟอนต์
             timeToTakePillLabel.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
             timeToTakePillLabel.setContentsMargins(10, 0, 0, 0)  # ระยะห่างด้านใน
             self.gridLayout_2.addWidget(timeToTakePillLabel, currentRow + index, 0, 1, 1)
@@ -145,7 +148,7 @@ class PillSummaryScreen(QDialog):
             # สร้าง Label สำหรับข้อมูลเวลา
             timeToTakePillData = self.createLabel(
                 f"{time} น.", 200, 40,
-                "font: 75 34pt \"JasmineUPC\"; color: #070021;",
+                "font: 36pt \"TH Sarabun New\"; color: #070021; font-weight: bold;",
                 self.scrollAreaWidgetContents
             )
             self.gridLayout_2.addWidget(timeToTakePillData, currentRow + index, 1, 1, 1)
@@ -177,13 +180,13 @@ class PillSummaryScreen(QDialog):
         # Save button
         self.button_save_pill_summary = QtWidgets.QToolButton(background_summary_screen)
         self.button_save_pill_summary.setGeometry(QtCore.QRect(280, 400, 220, 75))
-        self.button_save_pill_summary.setStyleSheet("font: 75 36pt \"JasmineUPC\"; background-color:#24BD73; color: #ffffff; border-radius:20px;")
+        self.button_save_pill_summary.setStyleSheet("font: 36pt \"TH Sarabun New\"; font-weight: bold; background-color:#24BD73; color: #ffffff; border-radius:20px;")
         self.button_save_pill_summary.setObjectName("button_save_pill_summary")
 
         # Channel label
         self.no_channel = QtWidgets.QLabel(background_summary_screen)
         self.no_channel.setGeometry(QtCore.QRect(40, 10, 190, 70))
-        self.no_channel.setStyleSheet("background-color: #C5E1FF; font: 75 36pt \"JasmineUPC\"; border-radius: 25px; color: #070021;")
+        self.no_channel.setStyleSheet("background-color: #C5E1FF; font: 75 36pt \"TH Sarabun New\"; font-weight: bold; border-radius: 25px; color: #070021;")
         self.no_channel.setAlignment(QtCore.Qt.AlignCenter)
         self.no_channel.setObjectName("no_channel")
 
@@ -246,14 +249,14 @@ class PillSummaryScreen(QDialog):
         __main__.widget.addWidget(success_save_screen)
         __main__.widget.setCurrentIndex(__main__.widget.currentIndex() + 1)
     
-
     def editDetail(self, edit_mode):
         global globalPillData
         # print(f"Edit mode: {edit_mode}")
         screen = None
         
         if edit_mode == "pill_name":
-            screen = PillNameScreen(globalPillData, self.pillNames) 
+            pillNames, pillIDs, pillNamesEng = fetch_pill_names()
+            screen = PillNameScreen(globalPillData, pillNames=pillNames, pillID=pillIDs ,pillNamesEng=pillNamesEng)
         elif edit_mode == "total_pills":
             screen = TotalPillsScreen()
             screen.pillData = globalPillData
@@ -267,26 +270,41 @@ class PillSummaryScreen(QDialog):
         if screen is not None:
             __main__.widget.addWidget(screen)
             __main__.widget.setCurrentIndex(__main__.widget.currentIndex() + 1)
-        # else:
-        #     print(f"Error: No screen initialized for edit mode '{edit_mode}'")
 
 
 # ########### ชื่อยา ############
 class PillNameScreen(QDialog):
     pill_name_entered_signal = pyqtSignal(str)
     
-    def __init__(self, pillData=None, pillNames=None, pillID=None, parent=None):
+    def __init__(self, pillData=None, pillNames=None, pillID=None, pillNamesEng=None, parent=None):
         super().__init__(parent)
         global globalPillData
         globalPillData = pillData if pillData is not None else {}
         self.pillNames = pillNames if pillNames is not None else []
         self.pillID = pillID if pillID is not None else []
+        self.pillNamesEng = pillNamesEng if pillNamesEng is not None else []
+        
+        # ใช้ฟังก์ชัน fetch_pill_names เพียงถ้าไม่ได้รับ pillNames หรือ pillID
+        if not self.pillNames or not self.pillID:
+            self.pillNames, self.pillID = fetch_pill_names()
+        
         self.inputPillName = globalPillData.get("name", "")
         self.inputPillID = globalPillData.get("pillId", "")
+        self.inputPillNameEng = globalPillData.get("medicalname", "")
+    
+        
+        # กำหนดค่าตำแหน่งเริ่มต้นของ current_pill_index
+        if self.inputPillName in self.pillNames:
+            self.current_pill_index = self.pillNames.index(self.inputPillName)
+        else:
+            self.current_pill_index = 0  # ถ้าไม่มีชื่อยาให้เริ่มต้นที่ index 0
+        
+        # print(f"Current pill name: {self.inputPillName}")
+        # print(f"Current pill ID: {self.inputPillID}")
+
         self.setupUi(self)
         self.save_button_pillname.clicked.connect(self.savePillName)
-        
-
+    
     def setupUi(self, background_confirm_pill_name):
         background_confirm_pill_name.setObjectName("background_confirm_pill_name")
         background_confirm_pill_name.resize(800, 480)
@@ -295,26 +313,23 @@ class PillNameScreen(QDialog):
         self.no_channel = QtWidgets.QLabel(background_confirm_pill_name)
         self.no_channel.setGeometry(QtCore.QRect(40, 30, 190, 70))
         font = QtGui.QFont()
-        font.setFamily("JasmineUPC")
+        font.setFamily("TH Sarabun New")
         font.setPointSize(36)
-        font.setBold(False)
-        font.setItalic(False)
-        font.setWeight(9)
         self.no_channel.setFont(font)
-        self.no_channel.setStyleSheet("background-color: #C5E1FF; font: 75 36pt \"JasmineUPC\"; border-radius: 25px; color: #070021;")
+        self.no_channel.setStyleSheet("background-color: #C5E1FF; font: 36pt \"TH Sarabun New\"; font-weight: bold; border-radius: 25px; color: #070021; ")
         self.no_channel.setAlignment(QtCore.Qt.AlignCenter)
         self.no_channel.setObjectName("no_channel")
         
         self.label_1 = QtWidgets.QLabel(background_confirm_pill_name)
-        self.label_1.setGeometry(QtCore.QRect(245, 30, 350, 70))
-        self.label_1.setStyleSheet("font: 34pt \"JasmineUPC\";")
-        self.label_1.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_1.setGeometry(QtCore.QRect(245, 30, 450, 70))
+        self.label_1.setStyleSheet("font: 36pt \"TH Sarabun New\"; font-weight: bold;")
+        self.label_1.setAlignment(QtCore.Qt.AlignLeft)
         self.label_1.setObjectName("label_1")
         
         # Label to display the selected pill name
         self.label_pill_name = QtWidgets.QLabel(background_confirm_pill_name)
-        self.label_pill_name.setGeometry(QtCore.QRect(222, 150, 350, 75))
-        self.label_pill_name.setStyleSheet("font: 34pt \"JasmineUPC\";")
+        self.label_pill_name.setGeometry(QtCore.QRect(120, 150, 560, 150))
+        self.label_pill_name.setStyleSheet("font: 30pt \"TH Sarabun New\"; background-color: white; border: 2px solid black; font-weight: bold;")
         self.label_pill_name.setAlignment(QtCore.Qt.AlignCenter)
         self.label_pill_name.setObjectName("label_pill_name")
         
@@ -328,16 +343,16 @@ class PillNameScreen(QDialog):
         
         # Left arrow button
         self.btn_left = QtWidgets.QPushButton(background_confirm_pill_name)
-        self.btn_left.setGeometry(QtCore.QRect(100, 150, 100, 75))
+        self.btn_left.setGeometry(QtCore.QRect(15, 185, 100, 75))
         self.btn_left.setText("<")
-        self.btn_left.setStyleSheet("font: 34pt \"JasmineUPC\";")
+        self.btn_left.setStyleSheet("font: 36pt \"TH Sarabun New\"; font-weight: bold;")
         self.btn_left.setObjectName("btn_left")
         
         # Right arrow button
         self.btn_right = QtWidgets.QPushButton(background_confirm_pill_name)
-        self.btn_right.setGeometry(QtCore.QRect(600, 150, 100, 75))
+        self.btn_right.setGeometry(QtCore.QRect(685, 185, 100, 75))
         self.btn_right.setText(">")
-        self.btn_right.setStyleSheet("font: 34pt \"JasmineUPC\";")
+        self.btn_right.setStyleSheet("font: 36pt \"TH Sarabun New\"; font-weight: bold;")
         self.btn_right.setObjectName("btn_right")
         
         # Connect buttons to functions
@@ -347,7 +362,7 @@ class PillNameScreen(QDialog):
         self.save_button_pillname = QtWidgets.QToolButton(background_confirm_pill_name)
         self.save_button_pillname.setGeometry(QtCore.QRect(295, 375, 200, 90))
         self.save_button_pillname.setMinimumSize(QtCore.QSize(100, 50))
-        self.save_button_pillname.setStyleSheet("QToolButton#save_button_pillname { font: 75 36pt \"JasmineUPC\"; background-color:#24BD73; color: #ffffff; border-radius:20px; } QToolButton#save_button_pillname:hover { font: 75 36pt \"JasmineUPC\"; background-color:#23B36D; color: #ffffff; border-radius:20px; }")
+        self.save_button_pillname.setStyleSheet("QToolButton#save_button_pillname { font: 75 36pt \"TH Sarabun New\";font-weight: bold; background-color:#24BD73; color: #ffffff; border-radius:20px; } QToolButton#save_button_pillname:hover { font: 75 36pt \"TH Sarabun New\";font-weight: bold; background-color:#23B36D; color: #ffffff; border-radius:20px; }")
         self.save_button_pillname.setObjectName("save_button_pillname")
         
         self.retranslateUi(background_confirm_pill_name)
@@ -369,10 +384,7 @@ class PillNameScreen(QDialog):
         self.label_pill_name.setText(self.pillNames[self.current_pill_index])
         if self.current_pill_index < len(self.pillID):
             self.inputPillID = self.pillID[self.current_pill_index]
-        else:
-            print("Error: current_pill_index is out of range for pillID")
-
-        print(f"Current index: {self.current_pill_index}, Pill Names Length: {len(self.pillNames)}, Pill IDs Length: {len(self.pillID)}")
+            self.inputPillNameEng = self.pillNamesEng[self.current_pill_index]
 
     def retranslateUi(self, background_confirm_pill_name):
         _translate = QtCore.QCoreApplication.translate
@@ -382,7 +394,7 @@ class PillNameScreen(QDialog):
 
         background_confirm_pill_name.setWindowTitle(_translate("background_confirm_pill_name", "Dialog"))
         self.no_channel.setText(_translate("background_confirm_pill_name", channelID))
-        self.label_1.setText(_translate("background_confirm_pill_name", "กรุณาเลือกชื่อยาของท่าน"))
+        self.label_1.setText(_translate("background_confirm_pill_name", "ใส่ชื่อยาของท่าน"))
         self.save_button_pillname.setText(_translate("background_confirm_pill_name", "บันทึก"))
         
     def savePillName(self):
@@ -394,9 +406,11 @@ class PillNameScreen(QDialog):
         global globalPillData
         globalPillData["name"] = selected_pill_name
         globalPillData["pillId"] = self.inputPillID
+        globalPillData["medicalname"] = self.pillNamesEng
+        
         # Save the data to the appropriate location
         # For example, you might save it to a file or a database
-        # print(json.dumps(globalPillData, indent=4))
+        print("globalPillData(PillNameScreen):", globalPillData)
         # print("\n บันทึกชื่อยาเรียบร้อยแล้ว \n")
     
         # เปลี่ยนไปยังหน้าจอสรุป
@@ -409,12 +423,8 @@ class PillNameScreen(QDialog):
 class TotalPillsScreen(QDialog):
     def __init__(self):
         super().__init__()
-        self.pillData = None
+        self.pillData = globalPillData if globalPillData is not None else {} # รับข้อมูลยาที่เลือกมาจากหน้าจอก่อนหน้า
         self.setupUi(self)
-        #======================= set max-min of total pills =======================#
-        self.slider_total_pills.setMaximum(99)
-        self.slider_total_pills.setMinimum(0)
-        self.slider_total_pills.valueChanged.connect(self.updateSliderTotalPills)
         self.button_save_total_pills.clicked.connect(lambda:self.saveTotalPills())
         
     def setupUi(self, background_total_pills):
@@ -426,47 +436,72 @@ class TotalPillsScreen(QDialog):
         self.no_channel = QtWidgets.QLabel(background_total_pills)
         self.no_channel.setGeometry(QtCore.QRect(40, 30, 190, 70))
         font = QtGui.QFont()
-        font.setFamily("JasmineUPC")
+        font.setFamily("TH Sarabun New")
         font.setPointSize(36)
-        font.setBold(False)
-        font.setItalic(False)
-        font.setWeight(9)
         self.no_channel.setFont(font)
-        self.no_channel.setStyleSheet("background-color: #C5E1FF; font: 75 36pt \"JasmineUPC\"; border-radius: 25px; color: #070021;")
+        self.no_channel.setStyleSheet("background-color: #C5E1FF; font: 75 36pt \"TH Sarabun New\"; border-radius: 25px; color: #070021; font-weight: bold;")
         self.no_channel.setAlignment(QtCore.Qt.AlignCenter)
         self.no_channel.setObjectName("no_channel")
 
-        # Initialize and set up QLabel for the instruction text
+        # Instruction text
         self.text_question_inputting_total_pills = QtWidgets.QLabel(background_total_pills)
-        self.text_question_inputting_total_pills.setGeometry(QtCore.QRect(85, 105, 650, 70))
-        self.text_question_inputting_total_pills.setStyleSheet("font: 40pt \"JasmineUPC\";")
+        self.text_question_inputting_total_pills.setGeometry(QtCore.QRect(245, 30, 450, 70))
+        self.text_question_inputting_total_pills.setStyleSheet("font: 36pt \"TH Sarabun New\"; font-weight: bold;")
+        self.text_question_inputting_total_pills.setAlignment(QtCore.Qt.AlignLeft)
         self.text_question_inputting_total_pills.setObjectName("text_question_inputting_total_pills")
 
-        # Initialize and set up QLCDNumber for displaying numeric values
-        self.lcdNumber = QtWidgets.QLCDNumber(background_total_pills)
-        self.lcdNumber.setGeometry(QtCore.QRect(210, 180, 370, 130))
-        self.lcdNumber.setStyleSheet("background-color: #ffffff;")
-        self.lcdNumber.setObjectName("lcdNumber")
+        # QLineEdit for number input
+        self.line_edit_total_pills = QtWidgets.QLineEdit(background_total_pills)
+        self.line_edit_total_pills.setGeometry(QtCore.QRect(275, 115, 250, 70))
+        self.line_edit_total_pills.setStyleSheet("background-color: #ffffff; font: 36pt \"TH Sarabun New\"; border-radius: 20px; font-weight: bold;")
+        self.line_edit_total_pills.setAlignment(QtCore.Qt.AlignCenter)
+        self.line_edit_total_pills.setValidator(QtGui.QIntValidator(0, 99))  # Limit input from 0 to 99
+        self.line_edit_total_pills.setObjectName("line_edit_total_pills")
 
-        # Initialize and set up QSlider for adjusting values
-        self.slider_total_pills = QtWidgets.QSlider(background_total_pills)
-        self.slider_total_pills.setGeometry(QtCore.QRect(100, 330, 600, 30))
-        self.slider_total_pills.setStyleSheet("QSlider { border-radius: 10px; }"
-                                                "QSlider::groove:horizontal { border: 10px; height: 15px; background: #1C84A9; }"
-                                                "QSlider::handle:horizontal { background: #1C84A9; border: 10px; width: 25px; margin: -8px 0; border-radius: 10px; }"
-                                                "QSlider::add-page:horizontal { background-color: white; border: 10px; }")
-        self.slider_total_pills.setSliderPosition(0)
-        self.slider_total_pills.setOrientation(QtCore.Qt.Horizontal)
-        self.slider_total_pills.setObjectName("slider_total_pills")
+        # Numpad Layout
+        self.numpad_layout = QtWidgets.QGridLayout()
+        self.numpad_layout.setSpacing(8)  # เพิ่มระยะห่างระหว่างปุ่ม
+        self.numpad_layout.setContentsMargins(310, 200, 200, 0)  # Set margins for better positioning
 
+        # Create Numpad buttons (1-9)
+        self.numpad_buttons = []
+        for i in range(1,10):
+            button = QtWidgets.QPushButton(str(i))
+            button.setMinimumSize(55, 55)  # ปรับขนาดปุ่มให้เล็กลง
+            button.setStyleSheet("font: 28pt \"TH Sarabun New\"; background-color: white; border-radius: 10px; font-weight: bold;")
+            button.clicked.connect(self.numpad_button_clicked)
+            row = (i - 1) // 3  # จัดปุ่ม 3 ปุ่มต่อแถว
+            col = (i - 1) % 3   # จัดตำแหน่งปุ่มตามลำดับคอลัมน์
+            self.numpad_layout.addWidget(button, row, col)
+            self.numpad_buttons.append(button)
+
+        # Button for 0 and backspace
+        self.button_zero = QtWidgets.QPushButton("0")
+        self.button_zero.setMinimumSize(55, 55)  # ปรับขนาดปุ่มให้เล็กลง
+        self.button_zero.setStyleSheet("font: 28pt \"TH Sarabun New\"; background-color: white; border-radius: 10px; font-weight: bold;")
+        self.button_zero.clicked.connect(self.numpad_button_clicked)
+
+        # Button for backspace
+        self.button_backspace = QtWidgets.QPushButton("ลบ")
+        self.button_backspace.setMinimumSize(55, 55)  # ปรับขนาดปุ่มให้เล็กลง
+        self.button_backspace.setStyleSheet("font: 28pt \"TH Sarabun New\"; background-color: white; border-radius: 10px; font-weight: bold;")
+        self.button_backspace.clicked.connect(self.numpad_backspace)
+
+        # Add 0 and Backspace to the last row
+        self.numpad_layout.addWidget(self.button_zero, 3, 0, 1, 2)  # ปุ่ม 0 ในตำแหน่งกลางแถวสุดท้าย 2 ช่อง
+        self.numpad_layout.addWidget(self.button_backspace, 3, 2)  # ปุ่มลบในตำแหน่งขวาสุดของแถวสุดท้าย
+
+        # Add Numpad layout to background
+        numpad_widget = QtWidgets.QWidget(background_total_pills)
+        numpad_widget.setLayout(self.numpad_layout)
+
+        # ปุ่มบันทึก
         self.button_save_total_pills = QtWidgets.QToolButton(background_total_pills)
-        self.button_save_total_pills.setGeometry(QtCore.QRect(295, 375, 200, 90))
-        self.button_save_total_pills.setStyleSheet("QToolButton { font: 75 36pt \"JasmineUPC\"; background-color:#24BD73; color: #ffffff; border-radius:20px; }"
-                                                    "QToolButton:hover { font: 75 36pt \"JasmineUPC\"; background-color:#23B36D; color: #ffffff; border-radius:20px; }")
+        self.button_save_total_pills.setGeometry(QtCore.QRect(580, 375, 200, 90))
+        self.button_save_total_pills.setStyleSheet("QToolButton { font: 75 36pt \"TH Sarabun New\"; background-color:#24BD73; color: #ffffff; border-radius:20px; font-weight: bold; }"
+                                                    "QToolButton:hover { font: 75 36pt \"TH Sarabun New\"; background-color:#23B36D; color: #ffffff; border-radius:20px; font-weight: bold; }")
         self.button_save_total_pills.setObjectName("button_save_total_pills")
-        self.button_save_total_pills.clicked.connect(self.saveTotalPills)
 
-        # Set up translations and connections
         self.retranslateUi(background_total_pills)
         QtCore.QMetaObject.connectSlotsByName(background_total_pills)
 
@@ -478,19 +513,31 @@ class TotalPillsScreen(QDialog):
         
         background_total_pills.setWindowTitle(_translate("background_total_pills", "Dialog"))
         self.no_channel.setText(_translate("background_total_pills", channelID))
-        self.text_question_inputting_total_pills.setText(_translate("background_total_pills", "กรุณาระบุจำนวนเม็ดยาทั้งหมดที่บรรจุ"))
+        self.text_question_inputting_total_pills.setText(_translate("background_total_pills", "เม็ดยาทั้งหมดที่บรรจุ"))
         self.button_save_total_pills.setText(_translate("background_total_pills", "บันทึก"))
 
-    def updateSliderTotalPills(self,count_of_total_pills):
-        self.lcdNumber.display(count_of_total_pills)
-        self.total_pills = count_of_total_pills
+    # Numpad button click event handler
+    def numpad_button_clicked(self):
+        sender = self.sender()
+        current_value = self.line_edit_total_pills.text()
+        new_value = current_value + sender.text()
+        if len(new_value) <= 2:  # Ensure max 2 digits
+            self.line_edit_total_pills.setText(new_value)
 
+    # Backspace button click event handler
+    def numpad_backspace(self):
+        current_value = self.line_edit_total_pills.text()
+        self.line_edit_total_pills.setText(current_value[:-1])
+        
+        
     def saveTotalPills(self):
-        if hasattr(self, 'total_pills'):
+        total_pills_text = self.line_edit_total_pills.text()
+        if total_pills_text.isdigit() and int(total_pills_text) > 0:
             global globalPillData
-            globalPillData["totalPills"] = self.total_pills
+            globalPillData["totalPills"] = int(total_pills_text)
 
-            screen = PillSummaryScreen(globalPillData, self.total_pills)
+            screen = PillSummaryScreen(globalPillData, total_pills_text)
+            print(f"globalPillData(TotalPillScreen)",globalPillData)
             __main__.widget.addWidget(screen)
             __main__.widget.setCurrentIndex(__main__.widget.currentIndex()+1)
 
@@ -500,10 +547,8 @@ class AmountPillPerTimeScreen(QDialog):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
-    #======================= set min-max of amount pill per time screen =======================#
-        self.slider_amount_pill_per_time.setMaximum(10)
-        self.slider_amount_pill_per_time.setMinimum(0)
-        self.slider_amount_pill_per_time.valueChanged.connect(self.updateSliderPillPerTime)
+        # if "pillsPerTime" in globalPillData:
+        #     self.line_edit_amount_pill_per_time.setText(str(globalPillData["pillsPerTime"]))
         self.button_next.clicked.connect(self.saveTimesToTakePill)
 
     def setupUi(self, background_amount_pill_per_time):
@@ -514,56 +559,67 @@ class AmountPillPerTimeScreen(QDialog):
         self.no_channel = QtWidgets.QLabel(background_amount_pill_per_time)
         self.no_channel.setGeometry(QtCore.QRect(40, 30, 190, 70))
         font = QtGui.QFont()
-        font.setFamily("JasmineUPC")
+        font.setFamily("TH Sarabun New")
         font.setPointSize(36)
-        font.setBold(False)
-        font.setItalic(False)
-        font.setWeight(9)
         self.no_channel.setFont(font)
-        self.no_channel.setStyleSheet("background-color: #C5E1FF;\n"
-"font: 75 36pt \"JasmineUPC\";\n"
-"border-radius: 25px;\n"
-"color: #070021;\n"
-"")
+        self.no_channel.setStyleSheet("background-color: #C5E1FF; font: 75 36pt \"TH Sarabun New\"; border-radius: 25px; color: #070021; font-weight: bold;")
         self.no_channel.setAlignment(QtCore.Qt.AlignCenter)
         self.no_channel.setObjectName("no_channel")
+        
         self.text_question_amount_pill_per_time = QtWidgets.QLabel(background_amount_pill_per_time)
-        self.text_question_amount_pill_per_time.setGeometry(QtCore.QRect(85, 105, 650, 70))
-        self.text_question_amount_pill_per_time.setStyleSheet("font: 40pt \"JasmineUPC\";")
+        self.text_question_amount_pill_per_time.setGeometry(QtCore.QRect(245, 30, 450, 70))
+        self.text_question_amount_pill_per_time.setStyleSheet("font: 36pt \"TH Sarabun New\" ; font-weight: bold;")
+        self.text_question_amount_pill_per_time.setAlignment(QtCore.Qt.AlignLeft)
         self.text_question_amount_pill_per_time.setObjectName("text_question_amount_pill_per_time")
-        self.lcdNumberPillPerTime = QtWidgets.QLCDNumber(background_amount_pill_per_time)
-        self.lcdNumberPillPerTime.setGeometry(QtCore.QRect(210, 180, 370, 130))
-        self.lcdNumberPillPerTime.setStyleSheet("background-color: #ffffff;")
-        self.lcdNumberPillPerTime.setObjectName("lcdNumberPillPerTime")
-        self.slider_amount_pill_per_time = QtWidgets.QSlider(background_amount_pill_per_time)
-        self.slider_amount_pill_per_time.setGeometry(QtCore.QRect(100, 330, 600, 30))
-        self.slider_amount_pill_per_time.setStyleSheet("QSlider{\n"
-"border-radius: 10px ;\n"
-"}\n"
-"\n"
-"QSlider::groove:horizontal{\n"
-"border: 10px ;\n"
-"height: 15px;\n"
-"background: #1C84A9;\n"
-"}\n"
-"\n"
-"QSlider::handle:horizontal{\n"
-"background: #1C84A9;\n"
-"border: 10px ;\n"
-"width: 25px;\n"
-"margin: -8px 0;\n"
-"border-radius: 10px;\n"
-"}\n"
-"QSlider::add-page:horizontal{\n"
-"background-color: white;\n"
-"border: 10px;\n"
-"}")
-        self.slider_amount_pill_per_time.setSliderPosition(0)
-        self.slider_amount_pill_per_time.setOrientation(QtCore.Qt.Horizontal)
-        self.slider_amount_pill_per_time.setObjectName("slider_amount_pill_per_time")
+        
+        self.line_edit_amount_pill_per_time = QtWidgets.QLineEdit(background_amount_pill_per_time)
+        self.line_edit_amount_pill_per_time.setGeometry(QtCore.QRect(275, 115, 250, 70))
+        self.line_edit_amount_pill_per_time.setStyleSheet("background-color: #ffffff; font: 36pt \"TH Sarabun New\"; border-radius: 20px; font-weight: bold;")
+        self.line_edit_amount_pill_per_time.setAlignment(QtCore.Qt.AlignCenter)
+        self.line_edit_amount_pill_per_time.setValidator(QtGui.QIntValidator(0, 10))  # Set limit from 0 to 10
+        self.line_edit_amount_pill_per_time.setObjectName("line_edit_amount_pill_per_time")
+        
+        # Numpad Layout
+        self.numpad_layout = QtWidgets.QGridLayout()
+        self.numpad_layout.setSpacing(8)  # เพิ่มระยะห่างระหว่างปุ่ม
+        self.numpad_layout.setContentsMargins(310, 200, 200, 0)  # Set margins for better positioning
+
+        # Create Numpad buttons (1-9)
+        self.numpad_buttons = []
+        for i in range(1,10):
+            button = QtWidgets.QPushButton(str(i))
+            button.setMinimumSize(55, 55)  # ปรับขนาดปุ่มให้เล็กลง
+            button.setStyleSheet("font: 28pt \"TH Sarabun New\"; background-color: white; border-radius: 10px; font-weight: bold;")
+            button.clicked.connect(self.numpad_button_clicked)
+            row = (i - 1) // 3  # จัดปุ่ม 3 ปุ่มต่อแถว
+            col = (i - 1) % 3   # จัดตำแหน่งปุ่มตามลำดับคอลัมน์
+            self.numpad_layout.addWidget(button, row, col)
+            self.numpad_buttons.append(button)
+            
+        # Button for 0 and backspace
+        self.button_zero = QtWidgets.QPushButton("0")
+        self.button_zero.setMinimumSize(55, 55)  # ปรับขนาดปุ่มให้เล็กลง
+        self.button_zero.setStyleSheet("font: 28pt \"TH Sarabun New\"; background-color: white; border-radius: 10px; font-weight: bold;")
+        self.button_zero.clicked.connect(self.numpad_button_clicked)
+        
+        # Button for backspace
+        self.button_backspace = QtWidgets.QPushButton("ลบ")
+        self.button_backspace.setMinimumSize(55, 55)  # ปรับขนาดปุ่มให้เล็กลง
+        self.button_backspace.setStyleSheet("font: 28pt \"TH Sarabun New\"; background-color: white; border-radius: 10px; font-weight: bold;")
+        self.button_backspace.clicked.connect(self.numpad_backspace)
+        
+        # Add 0 and Backspace to the last row
+        self.numpad_layout.addWidget(self.button_zero, 3, 0, 1, 2)  # ปุ่ม 0 ในตำแหน่งกลางแถวสุดท้าย 2 ช่อง
+        self.numpad_layout.addWidget(self.button_backspace, 3, 2)  # ปุ่มลบในตำแหน่งขวาสุดของแถวสุดท้าย
+        
+        # Add Numpad layout to background
+        numpad_widget = QtWidgets.QWidget(background_amount_pill_per_time)
+        numpad_widget.setLayout(self.numpad_layout)
+        
         self.button_next = QtWidgets.QToolButton(background_amount_pill_per_time)
-        self.button_next.setGeometry(QtCore.QRect(295, 375, 200, 90))
-        self.button_next.setStyleSheet("QToolButton { font: 75 36pt \"JasmineUPC\"; background-color:#24BD73; color: #ffffff; border-radius:20px; }""QToolButton:hover { font: 75 36pt \"JasmineUPC\"; background-color:#23B36D; color: #ffffff; border-radius:20px; }")
+        self.button_next.setGeometry(QtCore.QRect(580, 375, 200, 90))
+        self.button_next.setStyleSheet("QToolButton { font: 75 36pt \"TH Sarabun New\"; font-weight: bold; background-color:#24BD73; color: #ffffff; border-radius:20px; }"
+                                        "QToolButton:hover { font: 75 36pt \"TH Sarabun New\"; font-weight: bold; background-color:#23B36D; color: #ffffff; border-radius:20px; }")
         self.button_next.setObjectName("button_next")
 
         self.retranslateUi(background_amount_pill_per_time)
@@ -577,156 +633,166 @@ class AmountPillPerTimeScreen(QDialog):
 
         background_amount_pill_per_time.setWindowTitle(_translate("background_amount_pill_per_time", "Dialog"))
         self.no_channel.setText(_translate("background_amount_pill_per_time", channelID))
-        self.text_question_amount_pill_per_time.setText(_translate("background_amount_pill_per_time", "กรุณาระบุจำนวนยาที่ต้องทานในแต่ละมื้อ"))
-        self.button_next.setText(_translate("background_amount_pill_per_time", "ถัดไป"))
+        self.text_question_amount_pill_per_time.setText(_translate("background_amount_pill_per_time", "จำนวนยาที่ต้องกินต่อครั้ง"))
+        self.button_next.setText(_translate("background_amount_pill_per_time", "บันทึก"))
 
-    def updateSliderPillPerTime(self,amount_of_pill_per_time):
-        self.lcdNumberPillPerTime.display(amount_of_pill_per_time)
-        # print("[amount of pill per time] : ",amount_of_pill_per_time)
-        self.amount_pill =  amount_of_pill_per_time
+        # Numpad button click event handler
+    
+    def numpad_button_clicked(self):
+        sender = self.sender()
+        current_value = self.line_edit_amount_pill_per_time.text()
+        new_value = current_value + sender.text()
+        if len(new_value) <= 2:  # Ensure max 2 digits
+            self.line_edit_amount_pill_per_time.setText(new_value)
+
+    # Backspace button click event handler
+    def numpad_backspace(self):
+        current_value = self.line_edit_amount_pill_per_time.text()
+        self.line_edit_amount_pill_per_time.setText(current_value[:-1])
 
     def saveTimesToTakePill(self):
-        if hasattr(self, 'amount_pill') :
+        if hasattr(self, 'line_edit_amount_pill_per_time') and self.line_edit_amount_pill_per_time.text().isdigit():
             global globalPillData
-            globalPillData["pillsPerTime"] = self.amount_pill
+            globalPillData["pillsPerTime"] = int(self.line_edit_amount_pill_per_time.text())
 
-            screen = PillSummaryScreen(globalPillData,self.amount_pill)
+            screen = PillSummaryScreen(globalPillData,self.line_edit_amount_pill_per_time)
+            print(f"globalPillData(AmoutPillPerTimeScreen)",globalPillData)
             __main__.widget.addWidget(screen)
             __main__.widget.setCurrentIndex(__main__.widget.currentIndex()+1)
 
 
 # ########### เวลา ############
-class AddSummaryTimeScreen(QDialog):
-    def __init__(self, pillData):
-        super().__init__()
-        global globalTimesToTakePillArr
-        global globalPillData
-        globalTimesToTakePillArr = pillData['timeToTake']
-        globalPillData = pillData
-        self.timesToTakesPillArr = globalTimesToTakePillArr
-        self.setupUi(self)
-        self.success_button.clicked.connect(self.goToPillSummaryScreen)
+# class AddSummaryTimeScreen(QDialog):
+#     def __init__(self, pillData):
+#         super().__init__()
+#         global globalTimesToTakePillArr
+#         global globalPillData
+#         globalTimesToTakePillArr = pillData['timeToTake']
+#         globalPillData = pillData
+#         self.timesToTakesPillArr = globalTimesToTakePillArr
+#         self.setupUi(self)
+#         self.success_button.clicked.connect(self.goToPillSummaryScreen)
 
-    def setupUi(self, background_confirm_times_to_take_pill):
-        background_confirm_times_to_take_pill.setObjectName("background_confirm_times_to_take_pill")
-        background_confirm_times_to_take_pill.resize(800, 480)
-        background_confirm_times_to_take_pill.setStyleSheet("QWidget#background_confirm_times_to_take_pill{\n""background-color: #97C7F9}")
-        self.no_channel = QtWidgets.QLabel(background_confirm_times_to_take_pill)
-        self.no_channel.setGeometry(QtCore.QRect(40, 30, 190, 70))
-        font = QtGui.QFont()
-        font.setFamily("JasmineUPC")
-        font.setPointSize(36)
-        font.setBold(False)
-        font.setItalic(False)
-        font.setWeight(9)
-        self.no_channel.setFont(font)
-        self.no_channel.setStyleSheet("background-color: #C5E1FF;\n""font: 75 36pt \"JasmineUPC\";\n""border-radius: 25px;\n""color: #070021;\n""")
-        self.no_channel.setAlignment(QtCore.Qt.AlignCenter)
-        self.no_channel.setObjectName("no_channel")
-        self.header_text = QtWidgets.QLabel(background_confirm_times_to_take_pill)
-        self.header_text.setGeometry(QtCore.QRect(280, 30, 330, 80))
-        self.header_text.setStyleSheet("font: 34pt \"JasmineUPC\";")
-        self.header_text.setAlignment(QtCore.Qt.AlignCenter)
-        self.header_text.setObjectName("header_text")
-        self.scrollArea = QtWidgets.QScrollArea(background_confirm_times_to_take_pill)
-        self.scrollArea.setGeometry(QtCore.QRect(50, 150, 700, 200))
-        self.scrollArea.setStyleSheet("background-color:rgb(156, 183, 255);\n""border-color:rgb(156, 183, 255);")
-        self.scrollArea.setWidgetResizable(True)
-        self.scrollArea.setObjectName("scrollArea")
-        self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 698, 198))
-        self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
-        self.gridLayout = QtWidgets.QGridLayout(self.scrollAreaWidgetContents)
-        self.gridLayout.setObjectName("gridLayout")
-
-        self.add_time_button = QtWidgets.QToolButton(background_confirm_times_to_take_pill)
-        self.add_time_button.setGeometry(QtCore.QRect(700, 20, 70, 70))
-        self.add_time_button.setMinimumSize(QtCore.QSize(70, 70))
-        self.add_time_button.setStyleSheet("QToolButton#add_time_button {\n""   font-size: 40px;\n""    background-color:#24BD73;\n""  border-radius: 35px;\n""  color: white;\n""}\n""QToolButton#add_time_button {\n""    font-size: 40px;\n""    background-color:#24BD73;\n""  border-radius: 35px;\n""  color: white;\n""}")
-        self.add_time_button.setText("+")
-        self.add_time_button.clicked.connect(self.goToInputTimeToTakePillScreen)
-        self.add_time_button.setObjectName("add_time_button")
+#     def setupUi(self, background_confirm_times_to_take_pill):
+#         background_confirm_times_to_take_pill.setObjectName("background_confirm_times_to_take_pill")
+#         background_confirm_times_to_take_pill.resize(800, 480)
+#         background_confirm_times_to_take_pill.setStyleSheet("QWidget#background_confirm_times_to_take_pill{\n""background-color: #97C7F9}")
+#         self.no_channel = QtWidgets.QLabel(background_confirm_times_to_take_pill)
+#         self.no_channel.setGeometry(QtCore.QRect(40, 30, 190, 70))
+#         font = QtGui.QFont()
+#         font.setFamily("TH Sarabun New")
+#         font.setPointSize(36)
+#         self.no_channel.setFont(font)
+#         self.no_channel.setStyleSheet("background-color: #C5E1FF; font: 36pt \"TH Sarabun New\"; font-weight: bold; border-radius: 25px; color: #070021; ")
+#         self.no_channel.setAlignment(QtCore.Qt.AlignCenter)
+#         self.no_channel.setObjectName("no_channel")
         
-        for idx, time in enumerate(self.timesToTakesPillArr) :
-            objIndex = self.timesToTakesPillArr.index(time)
+#         self.header_text = QtWidgets.QLabel(background_confirm_times_to_take_pill)
+#         self.header_text.setGeometry(QtCore.QRect(245, 30, 450, 70))
+#         self.header_text.setStyleSheet("font: 36pt \"TH Sarabun New\"; font-weight: bold;")
+#         self.header_text.setAlignment(QtCore.Qt.AlignLeft)
+#         self.header_text.setObjectName("header_text")
+        
+#         self.scrollArea = QtWidgets.QScrollArea(background_confirm_times_to_take_pill)
+#         self.scrollArea.setGeometry(QtCore.QRect(50, 150, 700, 200))
+#         self.scrollArea.setStyleSheet("background-color:rgb(156, 183, 255);\n""border-color:rgb(156, 183, 255);")
+#         self.scrollArea.setWidgetResizable(True)
+#         self.scrollArea.setObjectName("scrollArea")
+#         self.scrollAreaWidgetContents = QtWidgets.QWidget()
+#         self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 698, 198))
+#         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
+#         self.gridLayout = QtWidgets.QGridLayout(self.scrollAreaWidgetContents)
+#         self.gridLayout.setObjectName("gridLayout")
 
-            timeToTakePillLabel = QtWidgets.QLabel(self.scrollAreaWidgetContents)
-            timeToTakePillLabel.setMinimumSize(QtCore.QSize(250, 0))
-            timeToTakePillLabel.setMaximumSize(QtCore.QSize(250, 16777215))
-            timeToTakePillLabel.setStyleSheet("background-color: none;\n""font: 75 30pt \"JasmineUPC\";\n""border-radius: 25px;\n""color: #070021;\n""background-color: #C5E1FF;")
-            timeToTakePillLabel.setAlignment(QtCore.Qt.AlignCenter)
-            timeToTakePillLabel.setText("เวลาที่ " + str(objIndex + 1))
-            timeToTakePillLabel.setObjectName("question_time_no" + str(objIndex))
-            self.gridLayout.addWidget(timeToTakePillLabel, 9+objIndex, 0, 1, 1)
+#         self.add_time_button = QtWidgets.QToolButton(background_confirm_times_to_take_pill)
+#         self.add_time_button.setGeometry(QtCore.QRect(700, 20, 70, 70))
+#         self.add_time_button.setMinimumSize(QtCore.QSize(70, 70))
+#         self.add_time_button.setStyleSheet("QToolButton#add_time_button {\n""   font-size: 40px;\n""    background-color:#24BD73;\n""  border-radius: 35px;\n""  color: white;\n""}\n""QToolButton#add_time_button {\n""    font-size: 40px;\n""    background-color:#24BD73;\n""  border-radius: 35px;\n""  color: white;\n""}")
+#         self.add_time_button.setText("+")
+#         self.add_time_button.clicked.connect(self.goToInputTimeToTakePillScreen)
+#         self.add_time_button.setObjectName("add_time_button")
+        
+#         for idx, time in enumerate(self.timesToTakesPillArr) :
+#             objIndex = self.timesToTakesPillArr.index(time)
 
-            timeToTakePillData = QtWidgets.QLabel(self.scrollAreaWidgetContents)
-            timeToTakePillData.setStyleSheet("font: 75 34pt \"JasmineUPC\";\n""color: #070021;\n""")
-            timeToTakePillData.setText(time)
-            timeToTakePillData.setObjectName("show_time_" + str(objIndex))
-            self.gridLayout.addWidget(timeToTakePillData, 9+objIndex, 1, 1, 1)
+#             timeToTakePillLabel = QtWidgets.QLabel(self.scrollAreaWidgetContents)
+#             timeToTakePillLabel.setMinimumSize(QtCore.QSize(250, 0))
+#             timeToTakePillLabel.setMaximumSize(QtCore.QSize(250, 16777215))
+#             timeToTakePillLabel.setStyleSheet("background-color: none;\n""font: 30pt \"TH Sarabun New\";\n""font-weight: bold; border-radius: 25px;\n""color: #070021;\n""background-color: #C5E1FF;")
+#             timeToTakePillLabel.setAlignment(QtCore.Qt.AlignCenter)
+#             timeToTakePillLabel.setText("เวลาที่ " + str(objIndex + 1))
+#             timeToTakePillLabel.setObjectName("question_time_no" + str(objIndex))
+#             self.gridLayout.addWidget(timeToTakePillLabel, 9+objIndex, 0, 1, 1)
 
-            timeToTakePillEditButton = QtWidgets.QToolButton(self.scrollAreaWidgetContents)
-            timeToTakePillEditButton.setIconSize(QtCore.QSize(68, 68))
-            timeToTakePillEditButton.setIcon(QtGui.QIcon('../Klongyaa/shared/images/edit2.png'))
-            timeToTakePillEditButton.setStyleSheet("background-color : rgb(255, 74, 74); border-radius: 35px;")
+#             timeToTakePillData = QtWidgets.QLabel(self.scrollAreaWidgetContents)
+#             timeToTakePillData.setStyleSheet("font: 36pt \"TH Sarabun New\";\n""font-weight: bold; color: #070021;\n""")
+#             timeToTakePillData.setText(time)
+#             timeToTakePillData.setObjectName("show_time_" + str(objIndex))
+#             self.gridLayout.addWidget(timeToTakePillData, 9+objIndex, 1, 1, 1)
+
+#             timeToTakePillEditButton = QtWidgets.QToolButton(self.scrollAreaWidgetContents)
+#             timeToTakePillEditButton.setIconSize(QtCore.QSize(68, 68))
+#             timeToTakePillEditButton.setIcon(QtGui.QIcon('../Klongyaa/shared/images/edit2.png'))
+#             timeToTakePillEditButton.setStyleSheet("background-color : rgb(255, 74, 74); border-radius: 35px;")
     
-            timeToTakePillEditButton.setObjectName("button_edit_time_" + str(objIndex))
+#             timeToTakePillEditButton.setObjectName("button_edit_time_" + str(objIndex))
             
-            timeToTakePillEditButton.clicked.connect(partial(self.editTimeToTakePill, idx))
+#             timeToTakePillEditButton.clicked.connect(partial(self.editTimeToTakePill, idx))
 
-            timeToTakePillEditButton.setText( "🖉")
-            self.gridLayout.addWidget(timeToTakePillEditButton, 9+objIndex, 2, 1, 1)
+#             timeToTakePillEditButton.setText( "🖉")
+#             self.gridLayout.addWidget(timeToTakePillEditButton, 9+objIndex, 2, 1, 1)
 
 
-        self.scrollArea.setWidget(self.scrollAreaWidgetContents)
-        self.success_button = QtWidgets.QToolButton(background_confirm_times_to_take_pill)
-        self.success_button.setGeometry(QtCore.QRect(295, 375, 200, 90))
-        self.success_button.setMinimumSize(QtCore.QSize(100, 50))
-        self.success_button.setStyleSheet("QToolButton#success_button {\n""       font: 75 36pt \"JasmineUPC\";\n""    background-color:#24BD73;\n""    color: #ffffff;\n""    border-radius:20px;\n""    width: 170px;\n""    height: 100px;\n""}\n""QToolButton#success_button:hover {\n""    font: 75 36pt \"JasmineUPC\";\n""    background-color:#23B36D;\n""    color: #ffffff;\n""    border-radius:20px;\n""    width: 170px;\n""    height:100px;\n""}")
-        self.success_button.setObjectName("success_button")
+#         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
+#         self.success_button = QtWidgets.QToolButton(background_confirm_times_to_take_pill)
+#         self.success_button.setGeometry(QtCore.QRect(295, 375, 200, 90))
+#         self.success_button.setMinimumSize(QtCore.QSize(100, 50))
+#         self.success_button.setStyleSheet("QToolButton#success_button {\n"" font-weight: bold;  font:  36pt \"TH Sarabun New\";\n""    background-color:#24BD73;\n""    color: #ffffff;\n""    border-radius:20px;\n""    width: 170px;\n""    height: 100px;\n""}\n""QToolButton#success_button:hover {\n""   font-weight: bold; font: 75 36pt \"TH Sarabun New\";\n""    background-color:#23B36D;\n""    color: #ffffff;\n""    border-radius:20px;\n""    width: 170px;\n""    height:100px;\n""}")
+#         self.success_button.setObjectName("success_button")
 
-        self.retranslateUi(background_confirm_times_to_take_pill)
-        QtCore.QMetaObject.connectSlotsByName(background_confirm_times_to_take_pill)
+#         self.retranslateUi(background_confirm_times_to_take_pill)
+#         QtCore.QMetaObject.connectSlotsByName(background_confirm_times_to_take_pill)
 
-    def retranslateUi(self, background_confirm_times_to_take_pill):
-        _translate = QtCore.QCoreApplication.translate
+#     def retranslateUi(self, background_confirm_times_to_take_pill):
+#         _translate = QtCore.QCoreApplication.translate
 
-        global globalPillData
-        channelID = "ช่องที่ " + str(globalPillData["channelId"] + 1)
+#         global globalPillData
+#         channelID = "ช่องที่ " + str(globalPillData["channelId"] + 1)
 
-        background_confirm_times_to_take_pill.setWindowTitle(_translate("background_confirm_times_to_take_pill", "Dialog"))
-        self.no_channel.setText(_translate("background_confirm_times_to_take_pill", channelID))
-        self.header_text.setText(_translate("background_confirm_times_to_take_pill", "เวลาที่ต้องทานยา"))
-        self.success_button.setText(_translate("background_confirm_times_to_take_pill", "เสร็จสิ้น"))
+#         background_confirm_times_to_take_pill.setWindowTitle(_translate("background_confirm_times_to_take_pill", "Dialog"))
+#         self.no_channel.setText(_translate("background_confirm_times_to_take_pill", channelID))
+#         self.header_text.setText(_translate("background_confirm_times_to_take_pill", "เวลาที่ต้องทานยา"))
+#         self.success_button.setText(_translate("background_confirm_times_to_take_pill", "บันทึก"))
 
     
-    def editTimeToTakePill(self, objIndex):
-        global globalPillData
+#     def editTimeToTakePill(self, objIndex):
+#         global globalPillData
 
-        screen = AmountPillPerTimeScreen(globalPillData, objIndex, False)
+#         screen = AmountPillPerTimeScreen(globalPillData, objIndex, False)
 
-        time_to_edit = globalPillData['timeToTake'][objIndex]
-        del globalPillData['timeToTake'][objIndex]
-        hour, minute = map(int, time_to_edit.split(':'))
-        screen.selected_hour = hour
-        screen.selected_minute = minute
+#         time_to_edit = globalPillData['timeToTake'][objIndex]
+#         del globalPillData['timeToTake'][objIndex]
+#         hour, minute = map(int, time_to_edit.split(':'))
+#         screen.selected_hour = hour
+#         screen.selected_minute = minute
 
-        screen.hour_display.setText(f"{hour:02d}")
-        screen.minute_display.setText(f"{minute:02d}")
+#         screen.hour_display.setText(f"{hour:02d}")
+#         screen.minute_display.setText(f"{minute:02d}")
 
-        __main__.widget.removeWidget(self)
-        __main__.widget.addWidget(screen)
-        __main__.widget.setCurrentIndex(__main__.widget.currentIndex() + 1)
+#         __main__.widget.removeWidget(self)
+#         __main__.widget.addWidget(screen)
+#         __main__.widget.setCurrentIndex(__main__.widget.currentIndex() + 1)
     
-    def goToPillSummaryScreen(self):
-        global globalTimesToTakePillArr
-        global globalPillData
-        globalPillData["timeToTake"] = globalTimesToTakePillArr
+#     def goToPillSummaryScreen(self):
+#         global globalTimesToTakePillArr
+#         global globalPillData
+#         globalPillData["timeToTake"] = globalTimesToTakePillArr
 
-        add_summary_time_screen = __main__.PillSummaryScreen(globalPillData)
-        __main__.widget.removeWidget(self)
-        __main__.widget.addWidget(add_summary_time_screen)
-        __main__.widget.setCurrentIndex(__main__.widget.currentIndex()+1)
+#         add_summary_time_screen = __main__.PillSummaryScreen(globalPillData)
+#         print(f"globalPillData(AddSummaryTimeScreen)",globalPillData)
+#         __main__.widget.removeWidget(self)
+#         __main__.widget.addWidget(add_summary_time_screen)
+#         __main__.widget.setCurrentIndex(__main__.widget.currentIndex()+1)
 
 
 globalTimesToTakePillArr = []

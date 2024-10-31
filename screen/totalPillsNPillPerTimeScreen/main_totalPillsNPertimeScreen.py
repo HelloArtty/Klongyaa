@@ -29,7 +29,7 @@ class TotalPillsScreen(QDialog):
         font.setFamily("TH Sarabun New")
         font.setPointSize(36)
         self.no_channel.setFont(font)
-        self.no_channel.setStyleSheet("background-color: #C5E1FF; font: 75 36pt \"TH Sarabun New\"; border-radius: 25px; color: #070021; font-weight: bold;")
+        self.no_channel.setStyleSheet("background-color: #C5E1FF; font: 36pt \"TH Sarabun New\"; border-radius: 25px; color: #070021; font-weight: bold;")
         self.no_channel.setAlignment(QtCore.Qt.AlignCenter)
         self.no_channel.setObjectName("no_channel")
 
@@ -102,7 +102,7 @@ class TotalPillsScreen(QDialog):
 
         background_total_pills.setWindowTitle(_translate("background_total_pills", "Dialog"))
         self.no_channel.setText(_translate("background_total_pills", channelID))
-        self.text_question_inputting_total_pills.setText(_translate("background_total_pills", "เม็ดยาทั้งหมดที่จะบรรจุ"))
+        self.text_question_inputting_total_pills.setText(_translate("background_total_pills", "เม็ดยาทั้งหมดที่บรรจุ"))
         self.button_save_total_pills.setText(_translate("background_total_pills", "ถัดไป"))
 
     # Numpad button click event handler
@@ -155,7 +155,7 @@ class AmountPillPerTimeScreen(QDialog):
         self.text_question_amount_pill_per_time = QtWidgets.QLabel(background_amount_pill_per_time)
         self.text_question_amount_pill_per_time.setGeometry(QtCore.QRect(245, 30, 450, 70))
         self.text_question_amount_pill_per_time.setStyleSheet("font: 36pt \"TH Sarabun New\" ; font-weight: bold;")
-        self.text_question_amount_pill_per_time.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignLeft)
+        self.text_question_amount_pill_per_time.setAlignment(QtCore.Qt.AlignLeft)
         self.text_question_amount_pill_per_time.setObjectName("text_question_amount_pill_per_time")
 
         self.line_edit_amount_pill_per_time = QtWidgets.QLineEdit(background_amount_pill_per_time)
@@ -219,7 +219,7 @@ class AmountPillPerTimeScreen(QDialog):
 
         background_amount_pill_per_time.setWindowTitle(_translate("background_amount_pill_per_time", "Dialog"))
         self.no_channel.setText(_translate("background_amount_pill_per_time", channelID))
-        self.text_question_amount_pill_per_time.setText(_translate("background_amount_pill_per_time", "จำนวนยาที่ต้องกินในแต่ละมื้อ"))
+        self.text_question_amount_pill_per_time.setText(_translate("background_amount_pill_per_time", "จำนวนยาที่ต้องกินต่อครั้ง"))
         self.button_next.setText(_translate("background_amount_pill_per_time", "ถัดไป"))
 
     # Numpad button click event handler

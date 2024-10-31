@@ -18,10 +18,11 @@ from PyQt5.QtWidgets import QApplication, QDialog
 from screen.homeScreen.line_messaging import sendLateMessage, sendLineMessage
 from screen.homeScreen.pill_checking import (checkIsSendLateMessage,
                                              checkIsTaken)
-from screen.homeScreen.showPillDetails import showTakePillScreen
+from screen.homeScreen.showTakePillDetails import showTakePillScreen
 from screen.homeScreen.ui_setup import setupUi
 from screen.inputPillNameScreen.main_inputPillnameScreen import PillNameScreen
 from screen.pillDetailScreen.main_detail_screen import DetailScreen
+from shared.api.getMedicines import fetch_pill_names
 
 sys.path.append(os.path.abspath('../klongyaa/Klongyaa'))
 
@@ -65,56 +66,34 @@ class HomeScreen(QDialog):
         setupUi(self, UIHomeScreen, self.pill_channel_buttons, self.pill_channel_datas, self.config)
         haveToTake = []
         self.checkTakePillThread(self.pill_channel_buttons, self.pill_channel_datas, haveToTake, self.config, UIHomeScreen)
-
-    #แก้
-    def fetch_pill_names(self):
-        url = __main__.config["url"] + "/user/getMedicines"
-        response = requests.get(url)
-        if response.status_code == 200:
-            data = response.json()
-            pill_ids = [""]
-            pill_names = ["โปรดเลือกชื่อยา"]
-            for pill in data:
-                pill_ids.append(pill["id"])
-                pill_names.append(pill["name"])
-            return pill_names, pill_ids
-        else:
-            return ["โปรดเลือกชื่อยา"], [""], ["Select Pill Name"]
-
-    def gotoPillDetailScreen(self, channelID, pill_channel_data, parent_window):
+        
+    def gotoPillDetailScreen(self, channelID, pill_channel_data):
         global isChangePage
         isChangePage = True
-        if len(pill_channel_data) != 0:
-            pillThatHaveToTakeFlag = 0
-            takeEveryPillFlag = 0
-            for index, item in enumerate(__main__.haveToTake):
-                if item["channelId"] == channelID:
-                    pillThatHaveToTakeFlag = 1
-                if item["isTaken"] == False:
-                    takeEveryPillFlag = 1
-            if pillThatHaveToTakeFlag == 1 or takeEveryPillFlag == 0:
+
+        if pill_channel_data:  # ตรวจสอบว่าช่องนี้มีข้อมูลยาหรือไม่
+            pillThatHaveToTakeFlag = any(item["channelId"] == channelID for item in __main__.haveToTake)
+            takeEveryPillFlag = any(not item["isTaken"] for item in __main__.haveToTake)
+
+            # กรณีที่มียาที่ยังต้องทาน หรือทุกเม็ดยาถูกทานหมดแล้ว
+            if pillThatHaveToTakeFlag or not takeEveryPillFlag:
                 detailScreen = DetailScreen(channelID)
                 __main__.widget.addWidget(detailScreen)
                 __main__.widget.setCurrentIndex(__main__.widget.currentIndex() + 1)
         else:
-            flag = 0
-            for item in __main__.haveToTake:
-                if item["isTaken"] == False:
-                    flag = 1
-            if flag == 0:
+            # กรณีที่ `pill_channel_data` ไม่มีข้อมูล (ยังไม่ได้เพิ่มยาในช่องนี้)
+            if all(item["isTaken"] for item in __main__.haveToTake):
                 pillData = {
                     "channelId": channelID,
                     "pillId": "",
                     "name": "",
+                    "medicalname": "",
                     "totalPills": "",
                     "pillsPerTime": "",
                     "timeToTake": []
                 }
-                pill_names, pill_ids = self.fetch_pill_names()
-                # print("id",pill_ids )
-                # print ("\nname",pill_names)
-                # print ("\nmedicalname",pill_medicalname)
-                InputScreen = PillNameScreen(pillData=pillData, pillNames=pill_names, pillID=pill_ids, parent=None)
+                pill_names, pill_ids, pill_medicalname = fetch_pill_names()
+                InputScreen = PillNameScreen(pillData=pillData, pillNames=pill_names, pillID=pill_ids, pillNamesEng=pill_medicalname, parent=None)
                 __main__.widget.addWidget(InputScreen)
                 __main__.widget.setCurrentIndex(__main__.widget.currentIndex() + 1)
     
@@ -142,7 +121,6 @@ class HomeScreen(QDialog):
         new_screen.show()
         print("Back To HomeScreen")
 
-    
     def isTimeToTakePill(self, time, now):
         nowDate = now.strftime("%Y-%m-%d")
         takePillDateTime = nowDate + " " + time

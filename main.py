@@ -6,6 +6,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import (QApplication, QDialog, QDialogButtonBox,
                              QGridLayout, QHBoxLayout, QLabel, QLineEdit,
                              QPushButton, QStackedWidget, QVBoxLayout)
+
 from screen.homeScreen.main_homeScreen import HomeScreen
 from screen.inputTimesToTakePill.main_inputTimesToTakePill import *
 from screen.pillSummaryScreen.main_pillSummaryScreen import PillSummaryScreen
@@ -345,6 +346,7 @@ if __name__ == "__main__":
                         'channelId': int(id_str),
                         'pillId': pill.get('medicine', {}).get('id', ''),
                         'name': pill.get('medicine', {}).get('name', ''),
+                        'medicalname' : pill.get('medicine', {}).get('medicalname', ''),
                         'totalPills': pill.get('total', 0),
                         'pillsPerTime': pill.get('amountPerTime', 0),
                         'timeToTake': [time.get('time', '').replace('.', ':') for time in pill.get('times', [])],
@@ -367,6 +369,7 @@ if __name__ == "__main__":
                 'channelId': int(id_str),
                 'pillId': pill.get('medicine', {}).get('id', ''),
                 'name': pill.get('medicine', {}).get('name', ''),
+                'medicalname' : pill.get('medicine', {}).get('medicalname', ''),
                 'totalPills': pill.get('total', 0),
                 'pillsPerTime': pill.get('amountPerTime', 0),
                 'timeToTake': [time.get('time', '').replace('.', ':') for time in pill.get('times', [])],

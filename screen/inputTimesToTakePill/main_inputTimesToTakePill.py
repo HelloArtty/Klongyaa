@@ -41,22 +41,19 @@ class InputTimeToTakePillScreen(QDialog):
         background_input_times_to_take_pill.setStyleSheet("QWidget#background_input_times_to_take_pill{\n""background-color: #97C7F9}")
         
         self.no_channel = QtWidgets.QLabel(background_input_times_to_take_pill)
-        self.no_channel.setGeometry(QtCore.QRect(40, 30, 191, 71))
+        self.no_channel.setGeometry(QtCore.QRect(40, 30, 190, 70))
         font = QtGui.QFont()
         font.setFamily("TH Sarabun New")
         font.setPointSize(36)
-        font.setBold(False)
-        font.setItalic(False)
-        font.setWeight(9)
         self.no_channel.setFont(font)
-        self.no_channel.setStyleSheet("background-color: #C5E1FF;\n""font: 75 36pt font-weight: bold;\"TH Sarabun New\";\n""border-radius: 25px;\n""color: #070021;\n""")
+        self.no_channel.setStyleSheet("background-color: #C5E1FF; font: 75 36pt \"TH Sarabun New\"; font-weight: bold; border-radius: 25px; color: #070021; ")
         self.no_channel.setAlignment(QtCore.Qt.AlignCenter)
         self.no_channel.setObjectName("no_channel")
         
         self.question_input_times_to_take_pill = QtWidgets.QLabel(background_input_times_to_take_pill)
-        self.question_input_times_to_take_pill.setGeometry(QtCore.QRect(245, 30, 350, 70))
+        self.question_input_times_to_take_pill.setGeometry(QtCore.QRect(245, 30, 450, 70))
         self.question_input_times_to_take_pill.setStyleSheet("font: 36pt \"TH Sarabun New\"; font-weight: bold;")
-        self.question_input_times_to_take_pill.setAlignment(QtCore.Qt.AlignCenter)
+        self.question_input_times_to_take_pill.setAlignment(QtCore.Qt.AlignLeft)
         self.question_input_times_to_take_pill.setObjectName("question_input_times_to_take_pill")
 
         # Time Frame
@@ -123,7 +120,22 @@ class InputTimeToTakePillScreen(QDialog):
         # Correct button (green)
         self.button_correct_pill_name = QtWidgets.QToolButton(background_input_times_to_take_pill)
         self.button_correct_pill_name.setGeometry(QtCore.QRect(295, 375, 200, 90))
-        self.button_correct_pill_name.setStyleSheet("QToolButton#button_correct_pill_name { font-weight: bold; font: 75 36pt \"TH Sarabun New\"; background-color:#24BD73; color: #ffffff; border-radius:20px; } QToolButton#button_correct_pill_name:hover { font-weight: bold;font: 75 36pt \"TH Sarabun New\"; background-color:#23B36D; color: #ffffff; border-radius:20px; }")
+        self.button_correct_pill_name.setStyleSheet("""
+    QToolButton#button_correct_pill_name {
+        font: 36pt "TH Sarabun New";
+        font-weight: bold;
+        background-color: #24BD73;
+        color: #ffffff;
+        border-radius: 20px;
+    }
+    QToolButton#button_correct_pill_name:hover {
+        font: 36pt "TH Sarabun New";
+        font-weight: bold;
+        background-color: #23B36D;
+        color: #ffffff;
+        border-radius: 20px;
+    }
+""")
         self.button_correct_pill_name.setObjectName("button_correct_pill_name")
         self.button_correct_pill_name.clicked.connect(self.goToAddSummaryTimeScreen)
         
@@ -191,18 +203,17 @@ class AddSummaryTimeScreen(QDialog):
         font = QtGui.QFont()
         font.setFamily("TH Sarabun New")
         font.setPointSize(36)
-        font.setBold(False)
-        font.setItalic(False)
-        font.setWeight(9)
         self.no_channel.setFont(font)
-        self.no_channel.setStyleSheet("background-color: #C5E1FF;\n""font: 75 36pt \"TH Sarabun New\";\n""border-radius: 25px;\n""color: #070021;\n""")
+        self.no_channel.setStyleSheet("background-color: #C5E1FF; font: 36pt \"TH Sarabun New\"; font-weight: bold; border-radius: 25px; color: #070021; ")
         self.no_channel.setAlignment(QtCore.Qt.AlignCenter)
         self.no_channel.setObjectName("no_channel")
+        
         self.header_text = QtWidgets.QLabel(background_confirm_times_to_take_pill)
-        self.header_text.setGeometry(QtCore.QRect(280, 30, 330, 80))
-        self.header_text.setStyleSheet("font: 36pt \"TH Sarabun New\";")
-        self.header_text.setAlignment(QtCore.Qt.AlignCenter)
+        self.header_text.setGeometry(QtCore.QRect(245, 30, 450, 70))
+        self.header_text.setStyleSheet("font: 36pt \"TH Sarabun New\"; font-weight: bold;")
+        self.header_text.setAlignment(QtCore.Qt.AlignLeft)
         self.header_text.setObjectName("header_text")
+        
         self.scrollArea = QtWidgets.QScrollArea(background_confirm_times_to_take_pill)
         self.scrollArea.setGeometry(QtCore.QRect(50, 150, 700, 200))
         self.scrollArea.setStyleSheet("background-color:rgb(156, 183, 255);\n""border-color:rgb(156, 183, 255);")
@@ -228,14 +239,14 @@ class AddSummaryTimeScreen(QDialog):
             timeToTakePillLabel = QtWidgets.QLabel(self.scrollAreaWidgetContents)
             timeToTakePillLabel.setMinimumSize(QtCore.QSize(250, 0))
             timeToTakePillLabel.setMaximumSize(QtCore.QSize(250, 16777215))
-            timeToTakePillLabel.setStyleSheet("background-color: none;\n""font: 75 30pt \"TH Sarabun New\";\n""border-radius: 25px;\n""color: #070021;\n""background-color: #C5E1FF;")
+            timeToTakePillLabel.setStyleSheet("background-color: none;\n""font: 30pt \"TH Sarabun New\";\n""border-radius: 25px;\n""color: #070021;\n""background-color: #C5E1FF; font-weight: bold;")
             timeToTakePillLabel.setAlignment(QtCore.Qt.AlignCenter)
             timeToTakePillLabel.setText("เวลาที่ " + str(objIndex + 1))
             timeToTakePillLabel.setObjectName("question_time_no" + str(objIndex))
             self.gridLayout.addWidget(timeToTakePillLabel, 9+objIndex, 0, 1, 1)
 
             timeToTakePillData = QtWidgets.QLabel(self.scrollAreaWidgetContents)
-            timeToTakePillData.setStyleSheet("font: 75 36pt \"TH Sarabun New\";\n""color: #070021;\n""")
+            timeToTakePillData.setStyleSheet("font: 36pt \"TH Sarabun New\"; font-weight: bold; \n""color: #070021;\n""")
             timeToTakePillData.setText(time)
             timeToTakePillData.setObjectName("show_time_" + str(objIndex))
             self.gridLayout.addWidget(timeToTakePillData, 9+objIndex, 1, 1, 1)
@@ -257,7 +268,7 @@ class AddSummaryTimeScreen(QDialog):
         self.success_button = QtWidgets.QToolButton(background_confirm_times_to_take_pill)
         self.success_button.setGeometry(QtCore.QRect(295, 375, 200, 90))
         self.success_button.setMinimumSize(QtCore.QSize(100, 50))
-        self.success_button.setStyleSheet("QToolButton#success_button {\n""       font: 75 36pt \"TH Sarabun New\";\n""    background-color:#24BD73;\n""    color: #ffffff;\n""    border-radius:20px;\n""    width: 170px;\n""    height: 100px;\n""}\n""QToolButton#success_button:hover {\n""    font: 75 36pt \"TH Sarabun New\";\n""    background-color:#23B36D;\n""    color: #ffffff;\n""    border-radius:20px;\n""    width: 170px;\n""    height:100px;\n""}")
+        self.success_button.setStyleSheet("QToolButton#success_button {\n"" font: 36pt \"TH Sarabun New\";\n""    background-color:#24BD73;\n""    color: #ffffff;\n""    border-radius:20px; font-weight: bold; \n""    width: 170px;\n""    height: 100px;\n""}\n""QToolButton#success_button:hover {\n""    font: 75 36pt \"TH Sarabun New\";\n""    background-color:#23B36D;\n""    color: #ffffff;\n""    border-radius:20px;\n""    width: 170px;\n""    font-weight: bold; height:100px;\n""}")
         self.success_button.setObjectName("success_button")
 
         self.retranslateUi(background_confirm_times_to_take_pill)
@@ -292,7 +303,6 @@ class AddSummaryTimeScreen(QDialog):
         __main__.widget.addWidget(screen)
         __main__.widget.setCurrentIndex(__main__.widget.currentIndex() + 1)
 
-
     def goToInputTimeToTakePillScreen(self):
         #================ go to add summary time screen ====================#
         global globalPillData
@@ -302,40 +312,15 @@ class AddSummaryTimeScreen(QDialog):
         __main__.widget.addWidget(screen)
         __main__.widget.setCurrentIndex(__main__.widget.currentIndex()+1)
     
-    def fetch_pill_names(self):
-        url = __main__.config["url"] + "/user/getMedicines"
-        response = requests.get(url)
-        if response.status_code == 200:
-            data = response.json()
-
-            # เริ่มต้นด้วย "โปรดเลือกชื่อยา"
-            pill_names = ["โปรดเลือกชื่อยา"]
-            pill_ids = [""]
-
-            for pill in data:
-                pill_names.append(pill["name"])
-                pill_ids.append(pill["id"])
-
-
-            return pill_names, pill_ids
-        else:
-            # print("Failed to fetch pill names")
-            return ["โปรดเลือกชื่อยา"], [""]
         
     def goToPillSummaryScreen(self):
         #================ go to add summary time screen ====================#
         global globalTimesToTakePillArr
         global globalPillData
         globalPillData["timeToTake"] = globalTimesToTakePillArr
-        # print("\n ไปหน้าสรุป \n")
-        # print(json.dumps(globalPillData, indent=4))
-        
-        # รายการชื่อยาและ ID
-        pill_names, pill_ids = self.fetch_pill_names()
-        # print("name : ",pill_names)
-        # print("pillId : ", pill_ids)
-                
-        add_summary_time_screen = PillSummaryScreen(pillData=globalPillData, pillNames=pill_names, pillID=pill_ids, parent=None)
+        print("globalPillData(AddSummaryTimeScreen)", globalPillData)
+
+        add_summary_time_screen = PillSummaryScreen(pillData=globalPillData, parent=None)
         __main__.widget.removeWidget(self)
         __main__.widget.addWidget(add_summary_time_screen)
         __main__.widget.setCurrentIndex(__main__.widget.currentIndex()+1)

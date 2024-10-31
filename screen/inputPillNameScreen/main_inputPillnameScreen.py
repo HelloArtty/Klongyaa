@@ -25,17 +25,19 @@ def resetGlobalData():
     globalPillData = {}
 
 class PillNameScreen(QDialog):
-    def __init__(self, pillData=None, pillNames=None, pillID=None, parent=None):
+    def __init__(self, pillData=None, pillNames=None, pillID=None, pillNamesEng=None, parent=None):
         super().__init__(parent)
         global globalPillData
         globalPillData = pillData if pillData is not None else {}
         self.pillNames = pillNames if pillNames is not None else []
         self.pillID = pillID if pillID is not None else []
-        self.pillID = pillID if pillID is not None else []
+        self.pillNamesEng = pillNamesEng if pillNamesEng is not None else []
+        
         self.inputPillName = globalPillData.get("name", "")
         self.inputPillID = globalPillData.get("pillId", "")
-        self.setupUi(self)
+        self.inputPillNameEng = globalPillData.get("medicalname", "")
         
+        self.setupUi(self)
         
     def setupUi(self, background_confirm_pill_name):
         background_confirm_pill_name.setObjectName("background_confirm_pill_name")
@@ -48,7 +50,7 @@ class PillNameScreen(QDialog):
         font.setFamily("TH Sarabun New")
         font.setPointSize(36)
         self.no_channel.setFont(font)
-        self.no_channel.setStyleSheet("background-color: #C5E1FF; font: 75 36pt \"TH Sarabun New\"; font-weight: bold; border-radius: 25px; color: #070021; ")
+        self.no_channel.setStyleSheet("background-color: #C5E1FF; font: 36pt \"TH Sarabun New\"; font-weight: bold; border-radius: 25px; color: #070021; ")
         self.no_channel.setAlignment(QtCore.Qt.AlignCenter)
         self.no_channel.setObjectName("no_channel")
 
@@ -110,6 +112,7 @@ class PillNameScreen(QDialog):
             self.current_pill_index = len(self.pillNames) - 1
         self.label_pill_name.setText(self.pillNames[self.current_pill_index])
         self.inputPillID = self.pillID[self.current_pill_index]
+        self.inputPillNameEng = self.pillNamesEng[self.current_pill_index]
 
     def navigate_right(self):
         if self.current_pill_index < len(self.pillNames) - 1:
@@ -118,6 +121,7 @@ class PillNameScreen(QDialog):
             self.current_pill_index = 0
         self.label_pill_name.setText(self.pillNames[self.current_pill_index])
         self.inputPillID = self.pillID[self.current_pill_index]
+        self.inputPillNameEng = self.pillNamesEng[self.current_pill_index]
         
     def retranslateUi(self, background_confirm_pill_name):
         _translate = QtCore.QCoreApplication.translate
@@ -139,6 +143,7 @@ class PillNameScreen(QDialog):
         global globalPillData
         globalPillData["name"] = selected_pill_name
         globalPillData["pillId"] = self.inputPillID
+        globalPillData["medicalname"] = self.inputPillNameEng
         total_pills_screen = TotalPillsScreen(pillData=globalPillData)
         # print(json.dumps(globalPillData, indent=4))
         # print("\n ไปหน้าเพิ่มจำนวนยาทั้งหมดและจำนวนยาที่ต้องกินต่อมื้อ \n")
