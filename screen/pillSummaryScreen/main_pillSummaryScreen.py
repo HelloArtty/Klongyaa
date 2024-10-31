@@ -57,6 +57,13 @@ class PillSummaryScreen(QDialog):
         background_summary_screen.resize(800, 480)
         background_summary_screen.setStyleSheet("QWidget#background_summary_screen{ background-color: #97C7F9 }")
 
+        # Channel label
+        self.no_channel = QtWidgets.QLabel(background_summary_screen)
+        self.no_channel.setGeometry(QtCore.QRect(40, 10, 190, 70))
+        self.no_channel.setStyleSheet("background-color: #C5E1FF; font: 75 36pt \"TH Sarabun New\"; font-weight: bold; border-radius: 25px; color: #070021;")
+        self.no_channel.setAlignment(QtCore.Qt.AlignCenter)
+        self.no_channel.setObjectName("no_channel")
+        
         # Header label
         self.text_header_summary_screen = QtWidgets.QLabel(background_summary_screen)
         self.text_header_summary_screen.setGeometry(QtCore.QRect(290, 20, 375, 60))
@@ -182,13 +189,6 @@ class PillSummaryScreen(QDialog):
         self.button_save_pill_summary.setGeometry(QtCore.QRect(280, 400, 220, 75))
         self.button_save_pill_summary.setStyleSheet("font: 36pt \"TH Sarabun New\"; font-weight: bold; background-color:#24BD73; color: #ffffff; border-radius:20px;")
         self.button_save_pill_summary.setObjectName("button_save_pill_summary")
-
-        # Channel label
-        self.no_channel = QtWidgets.QLabel(background_summary_screen)
-        self.no_channel.setGeometry(QtCore.QRect(40, 10, 190, 70))
-        self.no_channel.setStyleSheet("background-color: #C5E1FF; font: 75 36pt \"TH Sarabun New\"; font-weight: bold; border-radius: 25px; color: #070021;")
-        self.no_channel.setAlignment(QtCore.Qt.AlignCenter)
-        self.no_channel.setObjectName("no_channel")
 
         # Retranslate UI
         self.retranslateUi(background_summary_screen)

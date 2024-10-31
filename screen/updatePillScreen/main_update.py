@@ -43,7 +43,6 @@ class UpdatePillScreen(QDialog):
         self.editDetail("time")
 
         
-        
     def setupUi(self, background_update_screen):
         global globalPillData
         globalPillData = self.pill_channel_data
@@ -54,6 +53,13 @@ class UpdatePillScreen(QDialog):
         background_update_screen.resize(800, 480)
         background_update_screen.setStyleSheet("QWidget#background_update_screen{ background-color: #97C7F9 }")
 
+        # Channel label
+        self.no_channel = QtWidgets.QLabel(background_update_screen)
+        self.no_channel.setGeometry(QtCore.QRect(40, 10, 190, 70))
+        self.no_channel.setStyleSheet("background-color: #C5E1FF; font: 75 36pt \"TH Sarabun New\"; font-weight: bold; border-radius: 25px; color: #070021;")
+        self.no_channel.setAlignment(QtCore.Qt.AlignCenter)
+        self.no_channel.setObjectName("no_channel")
+        
         # Header label
         self.text_header_summary_screen = QtWidgets.QLabel(background_update_screen)
         self.text_header_summary_screen.setGeometry(QtCore.QRect(290, 20, 375, 60))
@@ -96,21 +102,23 @@ class UpdatePillScreen(QDialog):
         currentRow += 1
 
         # จำนวนยาทั้งหมด
-        if globalPillData["totalPills"] > 0:
-            self.question_total_pills = QtWidgets.QLabel("จำนวนยาทั้งหมด", self.scrollAreaWidgetContents)
-            self.question_total_pills.setMinimumSize(250, 35)  # กำหนดขนาดขั้นต่ำ
-            font = QtGui.QFont("TH Sarabun New", 36)  # กำหนดฟอนต์
-            self.question_total_pills.setFont(font)  # ตั้งค่าให้กับ QLabel
-            self.question_total_pills.setStyleSheet("background-color: #C5E1FF; border-radius: 25px; color: #070021; font-weight: bold;")  # ตั้งค่ารูปแบบ
-            self.question_total_pills.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)  # จัดเรียงชิดซ้ายและกลางแนวตั้ง
-            self.question_total_pills.setContentsMargins(20, 0, 0, 0)  # ตั้งค่าระยะห่าง
-            self.gridLayout_2.addWidget(self.question_total_pills, currentRow, 0, 1, 1)  # เพิ่มเข้าไปใน layout
-            self.show_total_pills = self.createLabel(f"{globalPillData['totalPills']} เม็ด", 200, 40, "font: 75 36pt \"TH Sarabun New\"; font-weight: bold; color: #070021; margin-right:50px;", self.scrollAreaWidgetContents)
-            self.gridLayout_2.addWidget(self.show_total_pills, currentRow, 1, 1, 1)
-            self.button_edit_total_pills = self.createToolButton("edit2.png", self.scrollAreaWidgetContents)
-            self.gridLayout_2.addWidget(self.button_edit_total_pills, currentRow, 3, 1, 1)
+        self.question_total_pills = QtWidgets.QLabel("จำนวนยาทั้งหมด", self.scrollAreaWidgetContents)
+        self.question_total_pills.setMinimumSize(250, 35)
+        font = QtGui.QFont("TH Sarabun New", 36)
+        self.question_total_pills.setFont(font)
+        self.question_total_pills.setStyleSheet("background-color: #C5E1FF; border-radius: 25px; color: #070021; font-weight: bold;")
+        self.question_total_pills.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+        self.question_total_pills.setContentsMargins(20, 0, 0, 0)
+        self.gridLayout_2.addWidget(self.question_total_pills, currentRow, 0, 1, 1)
 
-            currentRow += 1
+        # Create show_total_pills widget without condition
+        self.show_total_pills = self.createLabel("", 200, 40, "font: 75 36pt \"TH Sarabun New\"; font-weight: bold; color: #070021; margin-right:50px;", self.scrollAreaWidgetContents)
+        self.gridLayout_2.addWidget(self.show_total_pills, currentRow, 1, 1, 1)
+        self.button_edit_total_pills = self.createToolButton("edit2.png", self.scrollAreaWidgetContents)
+        self.gridLayout_2.addWidget(self.button_edit_total_pills, currentRow, 3, 1, 1)
+
+        currentRow += 1
+
 
         # จำนวนยาที่ต้องทานต่อครั้ง
         self.question_amount_pill = QtWidgets.QLabel("จำนวนยา", self.scrollAreaWidgetContents)
@@ -120,6 +128,7 @@ class UpdatePillScreen(QDialog):
         self.question_amount_pill.setStyleSheet("background-color: #C5E1FF; border-radius: 25px; color: #070021; font-weight: bold;")  # ตั้งค่ารูปแบบ
         self.question_amount_pill.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)  # จัดเรียงชิดซ้ายและกลางแนวตั้ง
         self.question_amount_pill.setContentsMargins(20, 0, 0, 0)  # ตั้งค่าระยะห่าง
+        
         self.gridLayout_2.addWidget(self.question_amount_pill, currentRow, 0, 1, 1)  # เพิ่มเข้าไปใน layout
         self.show_amount_pill = self.createLabel("", 200, 40, "font: 36pt \"TH Sarabun New\"; color: #070021; margin-right:50px; font-weight: bold;", self.scrollAreaWidgetContents)
         self.gridLayout_2.addWidget(self.show_amount_pill, currentRow, 1, 1, 1)
@@ -173,18 +182,16 @@ class UpdatePillScreen(QDialog):
         currentRow += len(globalPillData["timeToTake"])
         self.scroll_area.setWidget(self.scrollAreaWidgetContents)
         
+        # Back button
+        self.button_go_back = self.create_tool_button("ย้อนกลับ", background_update_screen, self.goBack, QtCore.QRect(145, 400, 220, 75))
+        self.button_go_back.setEnabled(True)
+        
         # Save button
         self.button_save_pill_summary = QtWidgets.QToolButton(background_update_screen)
-        self.button_save_pill_summary.setGeometry(QtCore.QRect(280, 400, 220, 75))
+        self.button_save_pill_summary.setGeometry(QtCore.QRect(445, 400, 220, 75))
         self.button_save_pill_summary.setStyleSheet("font: 36pt \"TH Sarabun New\"; font-weight: bold; background-color:#24BD73; color: #ffffff; border-radius:20px;")
         self.button_save_pill_summary.setObjectName("button_save_pill_summary")
-
-        # Channel label
-        self.no_channel = QtWidgets.QLabel(background_update_screen)
-        self.no_channel.setGeometry(QtCore.QRect(40, 10, 190, 70))
-        self.no_channel.setStyleSheet("background-color: #C5E1FF; font: 75 36pt \"TH Sarabun New\"; font-weight: bold; border-radius: 25px; color: #070021;")
-        self.no_channel.setAlignment(QtCore.Qt.AlignCenter)
-        self.no_channel.setObjectName("no_channel")
+        
 
         # Retranslate UI
         self.retranslateUi(background_update_screen)
@@ -197,15 +204,19 @@ class UpdatePillScreen(QDialog):
         pillName = globalPillData["name"]
         pillsPerTime = str(globalPillData["pillsPerTime"]) + " เม็ด/มื้อ"
         channelID = "ช่องที่ " + str(globalPillData["channelId"] + 1)
-        
+        totalPills = f"{globalPillData['totalPills']} เม็ด" if globalPillData.get("totalPills", 0) > 0 else "ไม่มีข้อมูล"
+
         background_summary_screen.setWindowTitle(_translate("background_summary_screen", "Dialog"))
         self.no_channel.setText(_translate("background_summary_screen", channelID))
         self.text_header_summary_screen.setText(_translate("background_summary_screen", "ข้อมูลของยาที่ต้องทาน"))
         self.question_pill_name.setText(_translate("background_summary_screen", "ชื่อยา"))
-        self.show_pill_name.setText(_translate("background_summary_screen", pillName))
         self.question_amount_pill.setText(_translate("background_summary_screen", "จำนวนยาที่ต้องทาน"))
-        self.show_amount_pill.setText(_translate("background_summary_screen", pillsPerTime))
         self.button_save_pill_summary.setText(_translate("background_summary_screen", "บันทึก"))
+        self.button_go_back.setText(_translate("background_detail_screen", "ย้อนกลับ"))
+        self.show_pill_name.setText(_translate("background_summary_screen", pillName))
+        self.show_total_pills.setText(_translate("background_summary_screen", totalPills))
+        self.show_amount_pill.setText(_translate("background_summary_screen", pillsPerTime))
+
         
     def createLabel(self, text, minWidth, minHeight, style, parent):
         label = QtWidgets.QLabel(parent)
@@ -221,6 +232,17 @@ class UpdatePillScreen(QDialog):
         button.setStyleSheet("background-color: rgb(255, 74, 74); border-radius: 35px;")
         return button
     
+    def create_tool_button(self, text, parent, click_action, geometry):
+        button = QtWidgets.QToolButton(parent)
+        button.setGeometry(geometry)
+        button.setStyleSheet("QToolButton { font: 36pt \"TH Sarabun New\"; background-color:#DD5D5D; color: #ffffff; border-radius:20px; font-weight: bold; }")
+        button.clicked.connect(click_action)
+        return button
+    
+    def goBack(self):
+        __main__.widget.addWidget(__main__.HomeScreen(__main__.pill_channel_datas, __main__.config))
+        __main__.widget.setCurrentIndex(__main__.widget.currentIndex() + 1)
+        
     def savePillSummary(self,id):
         global globalPillData
         id = globalPillData["id"]
