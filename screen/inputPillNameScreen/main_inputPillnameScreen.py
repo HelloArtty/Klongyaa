@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import QApplication, QDialog, QLabel, QWidget
 
 sys.path.append(os.path.abspath('../klongyaa/Klongyaa'))
 
-from screen.totalPillsNPillPerTimeScreen.main_totalPillsNPertimeScreen import \
+from screen.totalPillPerTimeScreen.main_totalPillPertimeScreen import \
     TotalPillsScreen
 
 # Initialize global variables

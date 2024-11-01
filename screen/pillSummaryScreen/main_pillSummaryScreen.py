@@ -26,6 +26,7 @@ class PillSummaryScreen(QDialog):
         
         self.inputPillName = globalPillData.get("name", "")
         self.inputPillID = globalPillData.get("pillId", "")
+        self.inputPillNameEng = globalPillData.get("medicalname", "")
         self.setupUi(self)
         self.button_save_pill_summary.clicked.connect(self.savePillSummary)
         
@@ -256,7 +257,7 @@ class PillSummaryScreen(QDialog):
         
         if edit_mode == "pill_name":
             pillNames, pillIDs, pillNamesEng = fetch_pill_names()
-            screen = PillNameScreen(globalPillData, pillNames=pillNames, pillID=pillIDs ,pillNamesEng=pillNamesEng)
+            screen = PillNameScreen(globalPillData, pillNames=pillNames, pillID=pillIDs, pillNamesEng=pillNamesEng)
         elif edit_mode == "total_pills":
             screen = TotalPillsScreen()
             screen.pillData = globalPillData
@@ -299,8 +300,6 @@ class PillNameScreen(QDialog):
         else:
             self.current_pill_index = 0  # ถ้าไม่มีชื่อยาให้เริ่มต้นที่ index 0
         
-        # print(f"Current pill name: {self.inputPillName}")
-        # print(f"Current pill ID: {self.inputPillID}")
 
         self.setupUi(self)
         self.save_button_pillname.clicked.connect(self.savePillName)
@@ -384,7 +383,12 @@ class PillNameScreen(QDialog):
         self.label_pill_name.setText(self.pillNames[self.current_pill_index])
         if self.current_pill_index < len(self.pillID):
             self.inputPillID = self.pillID[self.current_pill_index]
+            # print("PillID:", self.inputPillID)
+        if self.current_pill_index < len(self.pillNamesEng):
             self.inputPillNameEng = self.pillNamesEng[self.current_pill_index]
+            # print("PillNameEng:", self.inputPillNameEng)
+            
+    
 
     def retranslateUi(self, background_confirm_pill_name):
         _translate = QtCore.QCoreApplication.translate
@@ -406,10 +410,9 @@ class PillNameScreen(QDialog):
         global globalPillData
         globalPillData["name"] = selected_pill_name
         globalPillData["pillId"] = self.inputPillID
-        globalPillData["medicalname"] = self.pillNamesEng
+        globalPillData["medicalname"] = self.inputPillNameEng
         
         # Save the data to the appropriate location
-        # For example, you might save it to a file or a database
         print("globalPillData(PillNameScreen):", globalPillData)
         # print("\n บันทึกชื่อยาเรียบร้อยแล้ว \n")
     

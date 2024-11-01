@@ -311,8 +311,7 @@ class AddSummaryTimeScreen(QDialog):
         __main__.widget.removeWidget(self)
         __main__.widget.addWidget(screen)
         __main__.widget.setCurrentIndex(__main__.widget.currentIndex()+1)
-    
-        
+
     def goToPillSummaryScreen(self):
         #================ go to add summary time screen ====================#
         global globalTimesToTakePillArr

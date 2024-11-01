@@ -378,13 +378,12 @@ if __name__ == "__main__":
     
     # แสดงผลลัพธ์
     # print(f"Pill Channel Data: {json.dumps(pill_channel_datas, indent=4)}")
-    defaultfont = QtGui.QFont('Arial', 8)
-    defaultfont.setPixelSize(8)
+    QtWidgets.QApplication.setFont(QtGui.QFont('TH Sarabun New', 36, QtGui.QFont.Bold))
     QtWidgets.QApplication.setStyle("Windows")
-    QtWidgets.QApplication.setFont(defaultfont)
     screen = HomeScreen(pill_channel_datas, config)
     widget = QStackedWidget()
-    widget.setWindowTitle("GUI - KLONG_YAA")
+    widget.setWindowTitle("KLONGYAA")
+    widget.setWindowIcon(QtGui.QIcon('../Klongyaa/shared/images/icon_k.png'))
     widget.addWidget(screen)
     widget.setFixedWidth(800)
     widget.setFixedHeight(480)
