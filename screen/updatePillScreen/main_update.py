@@ -265,6 +265,7 @@ class UpdatePillScreen(QDialog):
         url = f"{__main__.config['url']}/user/updatePillChannel/{pill_id}"
         # Send the PUT request to update data
         res = requests.put(url, json=pill_data)
+        # print("Json:", pill_data)
 
         # Check the response
         if res.status_code == 200:

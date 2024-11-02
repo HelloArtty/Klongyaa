@@ -2,7 +2,7 @@ import __main__
 import requests
 
 
-def fetch_pill_channel_data(channelId):
+def checkTakePill(channelId):
     url = f"{__main__.config['url']}/user/hardwareGetPillChannels/{__main__.config['userId']}"
     response = requests.get(url)
     if response.status_code == 200:
@@ -17,6 +17,11 @@ def fetch_pill_channel_data(channelId):
                     'medicalname': pill.get('medicine', {}).get('medicalname', ''),
                     'totalPills': pill.get('total', ''),
                     'pillsPerTime': pill.get('amountPerTime', ''),
-                    'timeToTake': [time.get('time', '').replace('.', ':') for time in pill.get('times', [])]
+                    'timeToTake': [
+        {
+            'time': time.get('time', '').replace('.', ':'),
+            'isTaken': time.get('isTaken', False)
+        } for time in pill.get('times', [])
+    ],
                 
                 }

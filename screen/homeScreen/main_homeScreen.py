@@ -1,4 +1,5 @@
 import datetime
+import json
 import os
 import sys
 import threading
@@ -22,6 +23,7 @@ from screen.homeScreen.showTakePillDetails import showTakePillScreen
 from screen.homeScreen.ui_setup import setupUi
 from screen.inputPillNameScreen.main_inputPillnameScreen import PillNameScreen
 from screen.pillDetailScreen.main_detail_screen import DetailScreen
+from shared.api.getchecktakepill import checkTakePill
 from shared.api.getMedicines import fetch_pill_names
 
 sys.path.append(os.path.abspath('../klongyaa/Klongyaa'))
@@ -160,69 +162,110 @@ class HomeScreen(QDialog):
         self.alreadyShownPopup[int(takeTimeData["channelId"])] = False
 
     def checkTakePill(self, n, pill_channel_buttons, pill_channel_datas, haveToTake, config):
-        for index in range(8):
+        # วนลูปเฉพาะช่องที่มีข้อมูลใน pill_channel_datas
+        for index, pill_channel_data in pill_channel_datas.items():
+            index = int(index)
             pill_channel_btn = pill_channel_buttons[index]
-            pill_channel_data = pill_channel_datas[str(index)]
 
-            if len(pill_channel_data) != 0:
-                for time in pill_channel_data['timeToTake']:
-                    now = datetime.now()
+            # ข้ามช่องที่ไม่มีข้อมูล
+            if not pill_channel_data:
+                continue
 
-                    if time.split(":")[0] == "00":
-                        now += timedelta(days=1)
+            now = datetime.now()
 
-                    time_diff = self.isTimeToTakePill(time, now)
+            # ตรวจสอบเวลาที่อยู่ภายในช่วง 5 นาทีจากเวลาปัจจุบันเท่านั้น
+            for time_entry in pill_channel_data['timeToTake']:
+                time = time_entry
+                
+                print(f"Checking time: {time} for channel {index}")
+                
+                # เลื่อนเป็นวันถัดไปถ้าเวลาเริ่มต้นที่ "00"
+                check_time = now + timedelta(days=1) if time.startswith("00") else now
+                time_diff = self.isTimeToTakePill(time, check_time)
+                
+                # ข้ามเวลาทานยาที่เลยเวลามานานกว่า 5 นาที
+                if time_diff.total_seconds() < -300:
+                    continue  # ข้ามเวลาที่เลยมาเกิน 5 นาที
 
-                    if 0 <= time_diff.total_seconds() and (time_diff.seconds // 60 % 60) <= 5 and (time_diff.seconds // 3600) == 0:
-                        alreadyTakeFlag = False
-                        haveItemFlag = False
+                # ถ้าพบว่าเวลานั้นอยู่ในช่วง 5 นาทีจากเวลาปัจจุบัน
+                if 0 <= time_diff.total_seconds() <= 300:
+                    # ดึงข้อมูลจาก API และตรวจสอบ isTaken
+                    pill_channel_data = checkTakePill(index)
+                    print(f"Pill channel data: {json.dumps(pill_channel_data, indent=4)}")
+                    
+                    # ตรวจสอบ isTaken ใน timeToTake ของ pill_channel_data
+                    for entry in pill_channel_data.get('timeToTake', []):
+                        print(f"Time: {entry['time']}, isTaken: {entry['isTaken']}")
 
+                        # ตรวจสอบว่ามีเวลาใดที่ isTaken เป็น False หรือไม่
+                        if entry['isTaken'] == False:
+                            print(f"Time {entry['time']} for channel {index} is not taken yet.")
+                            is_taken = False
+                        else:
+                            is_taken = True
+                    
+                    if not pill_channel_data:
+                        continue  # ถ้า API ไม่คืนข้อมูลให้ข้ามช่องนี้
+
+                    # สร้าง takeTimeData สำหรับการแสดงข้อมูล
+                    takeTimeData = {
+                        "id": pill_channel_data.get("id", ""),
+                        "channelId": index,
+                        "time": time,
+                        "pillId": pill_channel_data.get("pillId", ""),
+                        "isTaken": is_taken,
+                        "isLateMessageSended": False,
+                    }
+                    print(f"Take time data: {json.dumps(takeTimeData , indent=4)}")
+                    
+                    # ตรวจสอบว่า haveToTake มีข้อมูลนี้อยู่หรือไม่ก่อนเพิ่มเข้าไป
+                    if not any(item["channelId"] == takeTimeData["channelId"] and item["time"] == takeTimeData["time"] for item in haveToTake):
+                        haveToTake.append(takeTimeData)
+                        print(f"Added to haveToTake: {takeTimeData}")
+                    else:
+                        print(f"Data for channelId {takeTimeData['channelId']} and time {takeTimeData['time']} already exists in haveToTake.")
+
+                    print(f"Current haveToTake data: {json.dumps(haveToTake, indent=4)}")
+
+
+                    # ตรวจสอบ isTaken สำหรับเวลาที่กำลังจะถึง
+                    is_taken = checkIsTaken(index, haveToTake)
+                    print(f"Is taken: {is_taken}")
+
+                    if is_taken == "is taken":
+                        continue  # ถ้า isTaken เป็น True ข้ามไปยังช่องถัดไป
+
+                    # แสดงหน้าจอการทานยาถ้ายังไม่เคยแสดงมาก่อนสำหรับช่องนี้
+                    if not self.alreadyShownPopup[index]:
+                        self.manageSound('play')
+                        sendLineMessage(pill_channel_data, str(time_diff), config)
+
+                        for button in pill_channel_buttons:
+                            button.setVisible(False)
+
+                        # แสดงหน้าจอการทานยา
+                        self.detailScreen = showTakePillScreen(
+                            pill_channel_data,
+                            lambda: self.onTakePillButtonClicked(index, haveToTake, takeTimeData, config, pill_channel_buttons)
+                        )
+
+                        __main__.widget.addWidget(self.detailScreen)
+                        __main__.widget.setCurrentIndex(__main__.widget.currentIndex() + 1)
+                        self.alreadyShownPopup[index] = True
+                        break  # ถ้าเจอเวลาที่ตรงแล้วให้ข้ามไปตรวจสอบช่องถัดไป
+                    else:
+                        self.manageSound('stop')
+                    break  # ถ้าเจอเวลาที่ตรงแล้วให้ข้ามไปตรวจสอบช่องถัดไป
+                else:
+                    # ส่งข้อความเตือนถ้ายังไม่ได้ทานยา
+                    if self.checkLateMessageStatus(index, haveToTake):
+                        sendLateMessage(pill_channel_data, time, config)
                         for item in haveToTake:
                             if item["channelId"] == index:
-                                haveItemFlag = True
-                            if item["channelId"] == index and item["isTaken"]:
-                                alreadyTakeFlag = True
-                                break
+                                item["isLateMessageSended"] = True
 
-                        if not haveItemFlag:
-                            # ดึง pillId จาก pill_channel_data
-                            id = pill_channel_data.get("id", "")
-                            pillId = pill_channel_data.get("pillId", "")
-                            
-                            takeTimeData = {
-                                "id": id,
-                                "channelId": index,
-                                "time": time,
-                                "pillId": pillId,
-                                "isTaken": False,
-                                "isLateMessageSended": False,
-                            }
-                            haveToTake.append(takeTimeData)
-
-                        if not alreadyTakeFlag and not self.alreadyShownPopup[index]:
-                            self.manageSound('play')
-                            sendLineMessage(pill_channel_datas[str(index)], str(time_diff), config)
-
-                            for button in pill_channel_buttons:
-                                button.setVisible(False)
-
-                            # Use showTakePillScreen to create the pill detail screen with a callback
-                            self.detailScreen = showTakePillScreen(pill_channel_data, lambda: self.onTakePillButtonClicked(index, haveToTake, takeTimeData, config, pill_channel_buttons))
-
-                            __main__.widget.addWidget(self.detailScreen)
-                            __main__.widget.setCurrentIndex(__main__.widget.currentIndex() + 1)
-                            self.alreadyShownPopup[index] = True
-                        else:
-                            self.manageSound('stop')
-                    else:
-                        if self.checkLateMessageStatus(index, haveToTake):
-                            sendLateMessage(pill_channel_datas[str(index)], time, config)
-                            for no, item in enumerate(haveToTake):
-                                if item["channelId"] == index:
-                                    haveToTake[no]["isLateMessageSended"] = True
-
-                            self.showHomeScreen(pill_channel_buttons)
-                            self.alreadyShownPopup[index] = False
+                        self.showHomeScreen(pill_channel_buttons)
+                        self.alreadyShownPopup[index] = False
 
     def checkTakePillThread(self, pill_channel_buttons, pill_channel_datas,haveToTake,config, UIHomeScreen):
         self.thread = QThread()

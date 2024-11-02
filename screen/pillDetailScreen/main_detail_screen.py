@@ -1,7 +1,9 @@
 import json
+
 import __main__
 import requests
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 from screen.updatePillScreen.main_update import UpdatePillScreen
 from shared.api.getPillchanneldata import fetch_pill_channel_data
 
@@ -12,6 +14,7 @@ class DetailScreen(QtWidgets.QDialog):
         super().__init__()
         self.channelId = channelId
         self.pill_channel_data = fetch_pill_channel_data(self.channelId)
+        print(self.pill_channel_data)
         self.setupUi(self)
 
     def setupUi(self, background_detail_screen):
