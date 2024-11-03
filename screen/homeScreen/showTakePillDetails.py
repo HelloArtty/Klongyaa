@@ -14,15 +14,17 @@ def showTakePillScreen(pill_channel_data, on_confirm_callback):
     # Main layout for the screen
     main_layout = QtWidgets.QVBoxLayout(pill_details_screen)
 
-    # Show pill name
-    pill_name_label = QtWidgets.QLabel(pill_channel_data["name"])
+    # Show pill name (use a default name if not found)
+    pill_name = pill_channel_data.get("name", "ไม่ทราบชื่อยา")
+    pill_name_label = QtWidgets.QLabel(pill_name)
     pill_name_label.setFont(QtGui.QFont("Arial", 24))  # Adjust font size
     pill_name_label.setGeometry(50, 50, 700, 50)
     pill_name_label.setAlignment(QtCore.Qt.AlignCenter)
     main_layout.addWidget(pill_name_label)
 
-    # Show pill amount
-    pill_amount_label = QtWidgets.QLabel(f"{pill_channel_data['pillsPerTime']} เม็ด")
+    # Show pill amount (use default value if not found)
+    pill_amount = pill_channel_data.get("pillsPerTime", 1)
+    pill_amount_label = QtWidgets.QLabel(f"{pill_amount} เม็ด")
     pill_amount_label.setFont(QtGui.QFont("Arial", 22))  # Adjust font size
     pill_amount_label.setGeometry(50, 120, 700, 50)
     pill_amount_label.setAlignment(QtCore.Qt.AlignCenter)
@@ -39,4 +41,3 @@ def showTakePillScreen(pill_channel_data, on_confirm_callback):
     main_layout.addWidget(confirm_button)
 
     return pill_details_screen
-

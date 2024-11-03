@@ -4,54 +4,53 @@ from linebot.models import TextMessage
 
 
 def sendLateMessage(pill_data, timeWillTake, config):
+    print("Attempting to send late message...")
     pill_name = pill_data['name']
     pill_amount_pertime = pill_data['pillsPerTime']
-    text = f'นาย {config["username"]} ลืมทานยา {pill_name} จำนวน {pill_amount_pertime} เม็ด เวลา {timeWillTake}'
+    text = f'คุณ {config["username"]} ลืมทานยา {pill_name} จำนวน {pill_amount_pertime} เม็ด เวลา {timeWillTake}'
     print(text)
     
-    # line_bot_api = LineBotApi(config['botAccessToken'])
-    # line_bot_api.push_message(config['lineId'], TextMessage(text=text))
-    
-    # ตรวจสอบ userId
-    if not config['userId']:
-        print("Error: userId is missing or invalid.")
-        return
-    # print(f'Sending message to userId: {config["username"]}, message: {text}')
+    # ส่งข้อความจริง (แสดงว่าการส่งสำเร็จหากไม่มีปัญหา)
+    try:
+        res = requests.post(config["url"] + "/user/addHistory", json={
+            "task": "forget",
+            "userID": config["userId"],
+            "medicine": str(pill_data["pillId"]),
+        })
+        print('Late message sent successfully' if res.status_code == 200 else 'Failed to send late message')
+    except Exception as e:
+        print(f"Error in sending late message: {e}")
 
-    res = requests.post(config["url"] + "/user/addHistory", json={
-        "task": "forget",
-        "userID": config["userId"],
-        "medicine": str(pill_data["pillId"]),
-    })
     
-    # print(str(pill_data["channelId"]))
-    print('Forgot to take pill')
+    except KeyError as e:
+        print(f"KeyError: {e} - Missing key in pill_data or config.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
 
 
 def sendLineMessage(pill_data, timeWillTake, config):
-    # print(timeWillTake)
-    pill_name = pill_data['name']
-    pill_amount_pertime = pill_data['pillsPerTime']
-    inMinute = timeWillTake.split(':')[1]
-    if inMinute.startswith('0'):
-        # print(inMinute)
+    # ตรวจสอบคีย์ 'name' และ 'pillsPerTime' ใน pill_data
+    pill_name = pill_data.get('name', 'ไม่ทราบชื่อยา')
+    pill_amount_pertime = pill_data.get('pillsPerTime', 1)
+    
+    # ประมวลผลเวลาในนาทีที่เหลือ
+    inMinute = timeWillTake.split(':')[1] if ':' in timeWillTake else "0"
+    if len(inMinute) > 1 and inMinute.startswith('0'):
         inMinute = inMinute[1]
-    text = f'นาย {config["username"]} มียาต้องทานชื่อ {pill_name} จำนวน {pill_amount_pertime} เม็ด ในอีก {inMinute} นาที'
+        
+    text = f'คุณ {config["username"]} มียาต้องทานชื่อ {pill_name} จำนวน {pill_amount_pertime} เม็ด ในอีก {inMinute} นาที'
     print(text)
-    # line_bot_api = LineBotApi(config['botAccessToken'])
-    # line_bot_api.push_message(config['lineId'], TextMessage(text=text))
     
     # ตรวจสอบ userId
-    if not config['userId']:
+    if not config.get('userId'):
         print("Error: userId is missing or invalid.")
         return
-    # print(f'Sending message to userId: {config["userId"]}, message: {text}')
     
+    # ส่งข้อมูลการแจ้งเตือนไปยัง backend
     res = requests.post(config["url"] + "/user/addHistory", json={
             "task": "alert",
             "userID": config["userId"],
-            "medicine": str(pill_data["pillId"]),
+            "medicine": str(pill_data.get("pillId", "")),
             })
-    # print(f'res : {res}')
     print('Time to take pill')
-    
