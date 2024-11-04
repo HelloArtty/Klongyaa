@@ -1,13 +1,15 @@
+from datetime import datetime
+
 import requests
 from linebot import LineBotApi
 from linebot.models import TextMessage
 
 
-def sendLateMessage(pill_data, timeWillTake, config):
+def sendLateMessage(pill_data, time, config):
     print("Attempting to send late message...")
     pill_name = pill_data['name']
     pill_amount_pertime = pill_data['pillsPerTime']
-    text = f'คุณ {config["username"]} ลืมทานยา {pill_name} จำนวน {pill_amount_pertime} เม็ด เวลา {timeWillTake}'
+    text = f'คุณ {config["username"]} ลืมทานยา {pill_name} จำนวน {pill_amount_pertime} เม็ด เวลา {time}'
     print(text)
     
     # ส่งข้อความจริง (แสดงว่าการส่งสำเร็จหากไม่มีปัญหา)
@@ -29,15 +31,21 @@ def sendLateMessage(pill_data, timeWillTake, config):
 
 
 
-def sendLineMessage(pill_data, timeWillTake, config):
+def sendLineMessage(pill_data, time, config):
     # ตรวจสอบคีย์ 'name' และ 'pillsPerTime' ใน pill_data
     pill_name = pill_data.get('name', 'ไม่ทราบชื่อยา')
     pill_amount_pertime = pill_data.get('pillsPerTime', 1)
+    print('time', time)
     
-    # ประมวลผลเวลาในนาทีที่เหลือ
-    inMinute = timeWillTake.split(':')[1] if ':' in timeWillTake else "0"
-    if len(inMinute) > 1 and inMinute.startswith('0'):
-        inMinute = inMinute[1]
+    # แปลงเวลาเป็นจำนวนนาทีทั้งหมด
+    specified_minutes = int(time.split(':')[0]) * 60 + int(time.split(':')[1])
+
+    # แปลงเวลาปัจจุบันเป็นจำนวนนาทีทั้งหมด
+    current_time = datetime.now()
+    current_minutes = current_time.hour * 60 + current_time.minute
+
+    # คำนวณความแตกต่างในรูปแบบนาที
+    inMinute = specified_minutes - current_minutes
         
     text = f'คุณ {config["username"]} มียาต้องทานชื่อ {pill_name} จำนวน {pill_amount_pertime} เม็ด ในอีก {inMinute} นาที'
     print(text)

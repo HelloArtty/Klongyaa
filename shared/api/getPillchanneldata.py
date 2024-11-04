@@ -15,7 +15,7 @@ def fetch_pill_channel_data(channelId):
                     'pillId': pill.get('medicine', {}).get('id', ''),
                     'name': pill.get('medicine', {}).get('name', ''),
                     'medicalname': pill.get('medicine', {}).get('medicalname', ''),
-                    'totalPills': pill.get('total', ''),
+                    'totalPills': pill.get('amount', ''),
                     'pillsPerTime': pill.get('amountPerTime', ''),
                     'timeToTake': [time.get('time', '').replace('.', ':') for time in pill.get('times', [])]
                 

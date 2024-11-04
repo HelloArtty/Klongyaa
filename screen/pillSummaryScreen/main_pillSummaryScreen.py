@@ -18,6 +18,8 @@ mockNum = 0
 class PillSummaryScreen(QDialog):
     def __init__(self, pillData=None, pillNames=None, pillID=None, pillNamesEng=None, parent=None):
         super().__init__(parent)
+        self.config = __main__.config
+        print("PillSummaryScreen config:", self.config)
         global globalPillData
         globalPillData = pillData if pillData is not None else {}
         self.pillNames = pillNames if pillNames is not None else []
@@ -244,7 +246,7 @@ class PillSummaryScreen(QDialog):
 
         if res.status_code == 200:
             print("โอเค")
-            __main__.refreshPillData()  # ส่งสัญญาณเมื่อข้อมูลถูกบันทึกสำเร็จ
+            __main__.refreshPillData(self.config) # ส่งสัญญาณเมื่อข้อมูลถูกบันทึกสำเร็จ
 
         __main__.widget.removeWidget(self)
         __main__.widget.addWidget(success_save_screen)

@@ -16,6 +16,7 @@ def checkTakePill(channelId):
                     'name': pill.get('medicine', {}).get('name', ''),
                     'medicalname': pill.get('medicine', {}).get('medicalname', ''),
                     'totalPills': pill.get('total', ''),
+                    'amountPills': pill.get('amount', ''),
                     'pillsPerTime': pill.get('amountPerTime', ''),
                     'timeToTake': [
         {

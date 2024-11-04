@@ -17,8 +17,8 @@ from PyQt5.QtWidgets import QApplication, QDialog
 
 # from screen.homeScreen.ldr import DistanceSensor, detect_pill_removal
 from screen.homeScreen.line_messaging import sendLateMessage, sendLineMessage
-from screen.homeScreen.pill_checking import (checkIsSendLateMessage,
-                                             checkIsTaken)
+# from screen.homeScreen.pill_checking import (checkIsSendLateMessage,
+#                                              checkIsTaken)
 from screen.homeScreen.showTakePillDetails import showTakePillScreen
 from screen.homeScreen.ui_setup import setupUi
 from screen.inputPillNameScreen.main_inputPillnameScreen import PillNameScreen
@@ -38,18 +38,6 @@ sound_notification = mixer.Sound(sound_file_path)
 
 print(sound_notification)
 #---------------- Function play sound notification ----------------#
-def releaseCooldown():
-    global sound_cooldown
-    sound_cooldown = False
-
-def playSound():
-    sound_notification.play()
-    sound_cooldown = True
-    threading.Timer(2, releaseCooldown).start()
-
-def stopSound():
-    sound_notification.stop()
-
 
 class HomeScreen(QDialog):
     def __init__(self, pill_channel_datas, config):
@@ -64,6 +52,8 @@ class HomeScreen(QDialog):
         self.pill_channel_buttons = []  # Store the buttons as an instance variable
         self.notification_queue = []
         self.current_date = datetime.now().date()
+        self.last_check_times = {}
+        self.sound_cooldown = False
         self.setupUi(self)
     
     def setupUi(self, UIHomeScreen):
@@ -100,14 +90,24 @@ class HomeScreen(QDialog):
                 InputScreen = PillNameScreen(pillData=pillData, pillNames=pill_names, pillID=pill_ids, pillNamesEng=pill_medicalname, parent=None)
                 __main__.widget.addWidget(InputScreen)
                 __main__.widget.setCurrentIndex(__main__.widget.currentIndex() + 1)
-    
+
     def manageSound(self, action='play'):
-        if action == 'play' and not self.isSoundOn:
-            playSound()
+        def play_loop():
+            if self.isSoundOn:  # ตรวจสอบสถานะการเล่นเสียงเพื่อไม่ให้หยุดก่อนครบเวลา
+                sound_notification.play()
+                threading.Timer(24, play_loop).start()  # ตั้งให้เล่นซ้ำทุกๆ 24 วินาที
+
+        if action == 'play' and not self.isSoundOn and not self.sound_cooldown:
             self.isSoundOn = True
+            self.sound_cooldown = True
+            play_loop()  # เริ่มเล่นเสียงวนซ้ำ
+            threading.Timer(300, lambda: self.manageSound('stop')).start()  # หยุดเสียงหลังจากครบ 5 นาที
+            threading.Timer(2, lambda: setattr(self, 'sound_cooldown', False)).start()  # ตั้ง cooldown 2 วินาที
+            return True
         elif action == 'stop' and self.isSoundOn:
-            stopSound()
+            sound_notification.stop()
             self.isSoundOn = False
+            return False
 
     def showHomeScreen(self, pill_channel_buttons):
         for button in pill_channel_buttons:
@@ -136,7 +136,7 @@ class HomeScreen(QDialog):
         
         # ใช้ takeTimeData ในการอัปเดตสถานะการทานยา
         self.updatePillStatus(takeTimeData, haveToTake)
-        print(takeTimeData)
+        # print(takeTimeData)
 
         # หยุดเสียงเตือน
         self.manageSound('stop')
@@ -149,7 +149,7 @@ class HomeScreen(QDialog):
         })
         print("Add history response:", res.status_code)
         
-        print("id", takeTimeData["id"])
+        # print("id", takeTimeData["id"])
         id = str(takeTimeData["id"])
         res = requests.put(config["url"] + "/user/userTakePill/" + id)
         print("Update pill status response:", res.status_code)
@@ -162,6 +162,9 @@ class HomeScreen(QDialog):
 
     def checkTakePill(self, n, pill_channel_buttons, pill_channel_datas, haveToTake, config):
         today = datetime.now().date()
+        now = datetime.now()
+        
+        # Reset daily status if date has changed
         if today != self.current_date:
             for item in haveToTake:
                 item['isTaken'] = False
@@ -170,47 +173,51 @@ class HomeScreen(QDialog):
             self.current_date = today
             print("New day detected. Resetting statuses for all channels.")
 
-        now = datetime.now()
+        # Initialize notification queue and reset notification flag
         self.notification_queue = []
+        self.notification_found = False  # Flag to check if notification is found
 
-        # สร้างฟังก์ชันเช็คว่าควรจะข้ามการตรวจสอบหรือไม่
+        # Function to check if the time should be skipped
         def should_skip_check(time_str):
             try:
                 target_time = datetime.strptime(time_str, "%H:%M").time()
                 current_time = now.time()
                 
-                # ถ้าเวลาขึ้นต้นด้วย "00" ให้เช็คกับวันถัดไป
-                if time_str.startswith("00"):
-                    if current_time.hour >= 1:  # ถ้าเลยเที่ยงคืนไปแล้ว
-                        return True
-                else:
-                    # ถ้าเลยเวลามามากกว่า 1 ชั่วโมง
-                    hour_diff = current_time.hour - target_time.hour
-                    if hour_diff > 1 or (hour_diff == 1 and current_time.minute > target_time.minute):
-                        return True
+                if time_str.startswith("00") and current_time.hour >= 1:
+                    return True
+                hour_diff = current_time.hour - target_time.hour
+                if hour_diff > 1 or (hour_diff == 1 and current_time.minute > target_time.minute):
+                    return True
                 return False
             except:
                 return False
 
+        # Loop through each pill channel
         for index, pill_channel_data in pill_channel_datas.items():
             index = int(index)
             if not pill_channel_data:
                 continue
 
+            # Check last update time for this channel to ensure 10-second intervals
+            last_check = self.last_check_times.get(index, 0)
+            if now.timestamp() - last_check < 10:  # 10 seconds
+                continue
+            self.last_check_times[index] = now.timestamp()
+
+            # Loop through each time entry for the pill channel
             for time_entry in pill_channel_data['timeToTake']:
                 time = time_entry
                 
-                # ข้ามการตรวจสอบถ้าเลยเวลามานานแล้ว
                 if should_skip_check(time):
                     print(f"Skipping check for channel {index} at {time} - Too late")
                     continue
                 
-                existing_data = next((item for item in haveToTake if 
-                    item["channelId"] == index and 
-                    item["time"] == time and 
+                existing_data = next((item for item in haveToTake if
+                    item["channelId"] == index and
+                    item["time"] == time and
                     item["id"] == pill_channel_data.get("id")), None)
                 
-                # ข้ามถ้ายาถูกทานแล้ว
+                # หากยาถูกทานแล้ว ให้ข้ามไป
                 if existing_data and existing_data.get("isTaken"):
                     print(f"Skipping check for channel {index} at {time} - Already taken")
                     continue
@@ -218,8 +225,8 @@ class HomeScreen(QDialog):
                 check_time = now + timedelta(days=1) if time.startswith("00") else now
                 time_diff = self.isTimeToTakePill(time, check_time)
                 
-                # เช็คว่าเลยเวลาทานยาหรือยัง (เกิน 30 นาที)
-                is_too_late = time_diff.total_seconds() < -10  # 30 minutes
+                # ตรวจสอบการแจ้งเตือนล่าช้า
+                is_too_late = time_diff.total_seconds() < -10
                 
                 if is_too_late and existing_data and not existing_data.get("isLateMessageSended"):
                     print(f"Sending late message for channel {index} at {time}")
@@ -228,9 +235,10 @@ class HomeScreen(QDialog):
                     existing_data["alreadyNotified"] = True
                     self.showHomeScreen(pill_channel_buttons)
                     self.manageSound('stop')
-                    continue
+                    self.notification_found = True  # Set flag to indicate notification was found
+                    continue  # Continue with other checks to avoid duplicate notification
                 
-                # ถ้าอยู่ในช่วงเวลาที่ควรแจ้งเตือน (5 นาที)
+                # ตรวจสอบการแจ้งเตือนถ้าถึงเวลา (ในช่วง 5 นาที)
                 if 0 <= time_diff.total_seconds() <= 300:
                     pill_channel_data = checkTakePill(index)
                     if not pill_channel_data:
@@ -246,9 +254,11 @@ class HomeScreen(QDialog):
                         continue
                     
                     if existing_data:
+                        # ป้องกันการแจ้งเตือนซ้ำโดยเช็คว่าเคยแจ้งแล้วหรือไม่
                         if not existing_data["alreadyNotified"]:
                             self.notification_queue.append(existing_data)
                             existing_data["alreadyNotified"] = True
+                            self.notification_found = True
                     else:
                         takeTimeData = {
                             "id": pill_channel_data.get("id", ""),
@@ -263,12 +273,12 @@ class HomeScreen(QDialog):
                         haveToTake.append(takeTimeData)
                         self.notification_queue.append(takeTimeData)
                         takeTimeData["alreadyNotified"] = True
+                        self.notification_found = True
 
-        if self.notification_queue:
+        # แสดงการแจ้งเตือนถ้ามีในคิว
+        if self.notification_found:
             self.showNextNotification(config, pill_channel_buttons, haveToTake)
-        else:
-            print("No more notifications in the queue.")
-            self.manageSound('stop')
+        
 
     def checkLateMessageStatus(self, index, time, haveToTake, is_too_late):
         # ถ้าไม่เลยเวลา return True เพื่อข้ามการส่งข้อความ
@@ -287,7 +297,6 @@ class HomeScreen(QDialog):
         # หยุดหากไม่มีการแจ้งเตือนในคิวแล้ว
         if not self.notification_queue:
             print("No more notifications in the queue.")
-            self.manageSound('stop')
             return
 
         # ดึงการแจ้งเตือนตัวแรกจากคิวและตรวจสอบว่าถูกทานไปแล้วหรือยัง
@@ -301,9 +310,12 @@ class HomeScreen(QDialog):
             
             # เริ่มแสดงการแจ้งเตือนสำหรับยาที่ยังไม่ได้ทาน
             self.manageSound('play')
+
             
             # แสดงการแจ้งเตือนหน้าจอ
-            sendLineMessage(next_pill, "0", config)  # แสดงข้อความแจ้งเตือนใน Line หรือช่องทางอื่น ๆ
+            time = next_pill["time"]
+            sendLineMessage(next_pill, time, config)  # แสดงข้อความแจ้งเตือนใน Line หรือช่องทางอื่น ๆ
+            print(f"Notification sent for channel {next_pill['channelId']} at {next_pill['time']}")
 
             for button in pill_channel_buttons:
                 button.setVisible(False)
@@ -349,16 +361,3 @@ class Worker(QObject):
             self.progress.emit(num + 1)
             num += 1
         self.finished.emit()
-
-
-
-
-
-
-
-
-
-
-
-
-

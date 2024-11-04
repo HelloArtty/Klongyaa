@@ -8,10 +8,6 @@ config = {
     "url": "https://pillbox-backend.ialwh0.easypanel.host"
 }
 
-#U788c8a78e138b540d2d4a330d1b87704
-#96b409f2-c19c-42d1-9666-2fc0360f59b5
-# eiei
-#test1
 
 # config = {
 #     "isFirstUse": False,

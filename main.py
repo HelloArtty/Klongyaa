@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import (QApplication, QDialog, QDialogButtonBox,
 
 from screen.homeScreen.main_homeScreen import HomeScreen
 from screen.inputTimesToTakePill.main_inputTimesToTakePill import *
-from screen.pillSummaryScreen.main_pillSummaryScreen import PillSummaryScreen
+# from screen.pillSummaryScreen.main_pillSummaryScreen import PillSummaryScreen
 # from shared.data.light_list import lightList
 from shared.data.mock.config import config
 
@@ -320,6 +320,7 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     check_and_update_user_id()
     
+    # ตั้งค่าเริ่มต้นให้กับ pill_channel_datas
     pill_channel_datas = {
         "0": {},
         "1": {},
@@ -331,8 +332,8 @@ if __name__ == "__main__":
         "7": {}
     }
     
-    def refreshPillData():
-        global pill_channel_datas
+    # ฟังก์ชันสำหรับอัปเดต pill_channel_datas
+    def refreshPillData(config):
         url = config["url"] + "/user/hardwareGetPillChannels/" + config["userId"]
         res = requests.get(url)
 
@@ -346,7 +347,7 @@ if __name__ == "__main__":
                         'channelId': int(id_str),
                         'pillId': pill.get('medicine', {}).get('id', ''),
                         'name': pill.get('medicine', {}).get('name', ''),
-                        'medicalname' : pill.get('medicine', {}).get('medicalname', ''),
+                        'medicalname': pill.get('medicine', {}).get('medicalname', ''),
                         'totalPills': pill.get('total', 0),
                         'pillsPerTime': pill.get('amountPerTime', 0),
                         'timeToTake': [time.get('time', '').replace('.', ':') for time in pill.get('times', [])],
@@ -356,26 +357,9 @@ if __name__ == "__main__":
         else:
             print(f"Error updating pill data: {res.status_code}")
 
-    url = config["url"] + "/user/hardwareGetPillChannels/" + config["userId"]
-    res = requests.get(url)
-        
-    json_response = res.json()
-    if isinstance(json_response, list):
-        for pill in json_response:
-            id_str = str(int(pill.get('channelIndex', 0)))
-            # print(f"Adding pill with id_str: {id_str}")
-            pill_channel_datas[id_str] = {
-                'id': pill.get('id', ''),
-                'channelId': int(id_str),
-                'pillId': pill.get('medicine', {}).get('id', ''),
-                'name': pill.get('medicine', {}).get('name', ''),
-                'medicalname' : pill.get('medicine', {}).get('medicalname', ''),
-                'totalPills': pill.get('total', 0),
-                'pillsPerTime': pill.get('amountPerTime', 0),
-                'timeToTake': [time.get('time', '').replace('.', ':') for time in pill.get('times', [])],
-                'img': pill.get('medicine', {}).get('img', '')
-            }
-    
+    # เรียกใช้ refreshPillData เพื่ออัปเดต pill_channel_datas
+    refreshPillData(config)
+
     # แสดงผลลัพธ์
     print(f"Pill Channel Data: {json.dumps(pill_channel_datas, indent=4)}")
     QtWidgets.QApplication.setFont(QtGui.QFont('TH Sarabun New', 36, QtGui.QFont.Bold))
