@@ -18,6 +18,7 @@ from shared.main_success_save_screen import SuccessSaveScreen
 class UpdatePillScreen(QDialog):
     def __init__(self, pill_channel_data, parent=None):
         super().__init__(parent)
+        self.config = __main__.config
         global globalPillData
         self.pill_channel_data = pill_channel_data
         globalPillData = self.pill_channel_data
@@ -270,7 +271,7 @@ class UpdatePillScreen(QDialog):
         # Check the response
         if res.status_code == 200:
             print("Update successful")
-            __main__.refreshPillData()  # Refresh data after successful update
+            __main__.refreshPillData(self.config)  # Refresh data after successful update
             __main__.widget.removeWidget(self)
             __main__.widget.addWidget(success_save_screen)
             __main__.widget.setCurrentIndex(__main__.widget.currentIndex() + 1)

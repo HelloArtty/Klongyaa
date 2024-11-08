@@ -18,7 +18,6 @@ def showTakePillScreen(pill_channel_data, on_confirm_callback):
     pill_name = pill_channel_data.get("name", "ไม่ทราบชื่อยา")
     pill_name_label = QtWidgets.QLabel(pill_name)
     pill_name_label.setFont(QtGui.QFont("Arial", 24))  # Adjust font size
-    pill_name_label.setGeometry(50, 50, 700, 50)
     pill_name_label.setAlignment(QtCore.Qt.AlignCenter)
     main_layout.addWidget(pill_name_label)
 
@@ -26,9 +25,15 @@ def showTakePillScreen(pill_channel_data, on_confirm_callback):
     pill_amount = pill_channel_data.get("pillsPerTime", 1)
     pill_amount_label = QtWidgets.QLabel(f"{pill_amount} เม็ด")
     pill_amount_label.setFont(QtGui.QFont("Arial", 22))  # Adjust font size
-    pill_amount_label.setGeometry(50, 120, 700, 50)
     pill_amount_label.setAlignment(QtCore.Qt.AlignCenter)
     main_layout.addWidget(pill_amount_label)
+
+    # Show pill channel (use default value if not found)
+    pill_channel = pill_channel_data.get("channelId", "ไม่ทราบช่อง")
+    pill_channel_label = QtWidgets.QLabel(f"ช่องที่: {pill_channel+1}")
+    pill_channel_label.setFont(QtGui.QFont("Arial", 22))  # Adjust font size
+    pill_channel_label.setAlignment(QtCore.Qt.AlignCenter)
+    main_layout.addWidget(pill_channel_label)
 
     # Add a button for confirming pill intake
     confirm_button = QtWidgets.QPushButton("กินยาแล้ว")
@@ -37,7 +42,7 @@ def showTakePillScreen(pill_channel_data, on_confirm_callback):
     
     # Connect the button with the callback function
     confirm_button.clicked.connect(on_confirm_callback)
-    
     main_layout.addWidget(confirm_button)
 
     return pill_details_screen
+
