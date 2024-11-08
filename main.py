@@ -361,7 +361,7 @@ if __name__ == "__main__":
     refreshPillData(config)
 
     # แสดงผลลัพธ์
-    print(f"Pill Channel Data: {json.dumps(pill_channel_datas, indent=4)}")
+    # print(f"Pill Channel Data: {json.dumps(pill_channel_datas, indent=4)}")
     QtWidgets.QApplication.setFont(QtGui.QFont('TH Sarabun New', 36, QtGui.QFont.Bold))
     QtWidgets.QApplication.setStyle("Windows")
     screen = HomeScreen(pill_channel_datas, config)
