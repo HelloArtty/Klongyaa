@@ -14,7 +14,7 @@ class DetailScreen(QtWidgets.QDialog):
         super().__init__()
         self.channelId = channelId
         self.pill_channel_data = fetch_pill_channel_data(self.channelId)
-        print(self.pill_channel_data)
+        # print(self.pill_channel_data)
         self.setupUi(self)
 
     def setupUi(self, background_detail_screen):

@@ -19,7 +19,7 @@ class PillSummaryScreen(QDialog):
     def __init__(self, pillData=None, pillNames=None, pillID=None, pillNamesEng=None, parent=None):
         super().__init__(parent)
         self.config = __main__.config
-        print("PillSummaryScreen config:", self.config)
+        # print("PillSummaryScreen config:", self.config)
         global globalPillData
         globalPillData = pillData if pillData is not None else {}
         self.pillNames = pillNames if pillNames is not None else []
@@ -329,10 +329,16 @@ class PillNameScreen(QDialog):
         
         # Label to display the selected pill name
         self.label_pill_name = QtWidgets.QLabel(background_confirm_pill_name)
-        self.label_pill_name.setGeometry(QtCore.QRect(120, 150, 560, 150))
+        self.label_pill_name.setGeometry(QtCore.QRect(120, 150, 560, 100))
         self.label_pill_name.setStyleSheet("font: 30pt \"TH Sarabun New\"; background-color: white; border: 2px solid black; font-weight: bold;")
         self.label_pill_name.setAlignment(QtCore.Qt.AlignCenter)
         self.label_pill_name.setObjectName("label_pill_name")
+        
+        self.label_pill_name_eng = QtWidgets.QLabel(background_confirm_pill_name)
+        self.label_pill_name_eng.setGeometry(QtCore.QRect(120, 260, 560, 100))  # Adjust geometry as needed
+        self.label_pill_name_eng.setStyleSheet("font: 26pt \"TH Sarabun New\"; background-color: white; border: 2px solid black; font-weight: bold;")
+        self.label_pill_name_eng.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_pill_name_eng.setObjectName("label_pill_name_eng")
         
         # Set initial selection
         self.current_pill_index = 0
@@ -341,6 +347,13 @@ class PillNameScreen(QDialog):
         elif isinstance(self.pillNames, dict):
             # แก้เป็นการเข้าถึง dictionary โดยตรง
             self.label_pill_name.setText(self.pillNames.get("name", ""))
+            
+            
+        # # Set initial English pill name
+        if isinstance(self.pillNamesEng, list) and len(self.pillNamesEng) > 0:
+            self.label_pill_name_eng.setText(self.pillNamesEng[self.current_pill_index])
+        elif isinstance(self.pillNamesEng, dict):
+            self.label_pill_name_eng.setText(self.pillNamesEng.get("medicalname", ""))
         
         # Left arrow button
         self.btn_left = QtWidgets.QPushButton(background_confirm_pill_name)
@@ -369,26 +382,26 @@ class PillNameScreen(QDialog):
         self.retranslateUi(background_confirm_pill_name)
         QtCore.QMetaObject.connectSlotsByName(background_confirm_pill_name)
 
+    def update_pill_names(self):
+        """Update both pill name labels when navigating."""
+        self.label_pill_name.setText(self.pillNames[self.current_pill_index])
+        self.label_pill_name_eng.setText(self.pillNamesEng[self.current_pill_index])
+        self.inputPillID = self.pillID[self.current_pill_index]
+        self.inputPillNameEng = self.pillNamesEng[self.current_pill_index]
+
     def navigate_left(self):
-        if not self.pillNames:
-            return
-        self.current_pill_index = (self.current_pill_index - 1) % len(self.pillNames)
-        self.update_display()
+        if self.current_pill_index > 0:
+            self.current_pill_index -= 1
+        else:
+            self.current_pill_index = len(self.pillNames) - 1
+        self.update_pill_names()
 
     def navigate_right(self):
-        if not self.pillNames:
-            return
-        self.current_pill_index = (self.current_pill_index + 1) % len(self.pillNames)
-        self.update_display()
-
-    def update_display(self):
-        self.label_pill_name.setText(self.pillNames[self.current_pill_index])
-        if self.current_pill_index < len(self.pillID):
-            self.inputPillID = self.pillID[self.current_pill_index]
-            # print("PillID:", self.inputPillID)
-        if self.current_pill_index < len(self.pillNamesEng):
-            self.inputPillNameEng = self.pillNamesEng[self.current_pill_index]
-            # print("PillNameEng:", self.inputPillNameEng)
+        if self.current_pill_index < len(self.pillNames) - 1:
+            self.current_pill_index += 1
+        else:
+            self.current_pill_index = 0
+        self.update_pill_names()
             
     
 
@@ -415,7 +428,7 @@ class PillNameScreen(QDialog):
         globalPillData["medicalname"] = self.inputPillNameEng
         
         # Save the data to the appropriate location
-        print("globalPillData(PillNameScreen):", globalPillData)
+        # print("globalPillData(PillNameScreen):", globalPillData)
         # print("\n บันทึกชื่อยาเรียบร้อยแล้ว \n")
     
         # เปลี่ยนไปยังหน้าจอสรุป
@@ -542,7 +555,7 @@ class TotalPillsScreen(QDialog):
             globalPillData["totalPills"] = int(total_pills_text)
 
             screen = PillSummaryScreen(globalPillData, total_pills_text)
-            print(f"globalPillData(TotalPillScreen)",globalPillData)
+            # print(f"globalPillData(TotalPillScreen)",globalPillData)
             __main__.widget.addWidget(screen)
             __main__.widget.setCurrentIndex(__main__.widget.currentIndex()+1)
 
@@ -661,7 +674,7 @@ class AmountPillPerTimeScreen(QDialog):
             globalPillData["pillsPerTime"] = int(self.line_edit_amount_pill_per_time.text())
 
             screen = PillSummaryScreen(globalPillData,self.line_edit_amount_pill_per_time)
-            print(f"globalPillData(AmoutPillPerTimeScreen)",globalPillData)
+            # print(f"globalPillData(AmoutPillPerTimeScreen)",globalPillData)
             __main__.widget.addWidget(screen)
             __main__.widget.setCurrentIndex(__main__.widget.currentIndex()+1)
 

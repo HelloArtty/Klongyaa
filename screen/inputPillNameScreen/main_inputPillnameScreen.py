@@ -63,11 +63,17 @@ class PillNameScreen(QDialog):
         #แก้
         # Label to display the selected pill name
         self.label_pill_name = QtWidgets.QLabel(background_confirm_pill_name)
-        self.label_pill_name.setGeometry(QtCore.QRect(120, 150, 560, 150))
+        self.label_pill_name.setGeometry(QtCore.QRect(120, 150, 560, 100))
         self.label_pill_name.setStyleSheet("font: 30pt \"TH Sarabun New\"; background-color: white; border: 2px solid black; font-weight: bold;")
         self.label_pill_name.setAlignment(QtCore.Qt.AlignCenter)
         self.label_pill_name.setObjectName("label_pill_name")
         
+        
+        self.label_pill_name_eng = QtWidgets.QLabel(background_confirm_pill_name)
+        self.label_pill_name_eng.setGeometry(QtCore.QRect(120, 260, 560, 100))  # Adjust geometry as needed
+        self.label_pill_name_eng.setStyleSheet("font: 26pt \"TH Sarabun New\"; background-color: white; border: 2px solid black; font-weight: bold;")
+        self.label_pill_name_eng.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_pill_name_eng.setObjectName("label_pill_name_eng")
         
         # Set initial selection
         self.current_pill_index = 0
@@ -76,6 +82,13 @@ class PillNameScreen(QDialog):
         elif isinstance(self.pillNames, dict):
             # แก้เป็นการเข้าถึง dictionary โดยตรง
             self.label_pill_name.setText(self.pillNames.get("name", ""))
+            
+            
+        # # Set initial English pill name
+        if isinstance(self.pillNamesEng, list) and len(self.pillNamesEng) > 0:
+            self.label_pill_name_eng.setText(self.pillNamesEng[self.current_pill_index])
+        elif isinstance(self.pillNamesEng, dict):
+            self.label_pill_name_eng.setText(self.pillNamesEng.get("medicalname", ""))
             
 
         # Left arrow button
@@ -105,23 +118,26 @@ class PillNameScreen(QDialog):
         self.retranslateUi(background_confirm_pill_name)
         QtCore.QMetaObject.connectSlotsByName(background_confirm_pill_name)
         
+    def update_pill_names(self):
+        """Update both pill name labels when navigating."""
+        self.label_pill_name.setText(self.pillNames[self.current_pill_index])
+        self.label_pill_name_eng.setText(self.pillNamesEng[self.current_pill_index])
+        self.inputPillID = self.pillID[self.current_pill_index]
+        self.inputPillNameEng = self.pillNamesEng[self.current_pill_index]
+
     def navigate_left(self):
         if self.current_pill_index > 0:
             self.current_pill_index -= 1
         else:
             self.current_pill_index = len(self.pillNames) - 1
-        self.label_pill_name.setText(self.pillNames[self.current_pill_index])
-        self.inputPillID = self.pillID[self.current_pill_index]
-        self.inputPillNameEng = self.pillNamesEng[self.current_pill_index]
+        self.update_pill_names()
 
     def navigate_right(self):
         if self.current_pill_index < len(self.pillNames) - 1:
             self.current_pill_index += 1
         else:
             self.current_pill_index = 0
-        self.label_pill_name.setText(self.pillNames[self.current_pill_index])
-        self.inputPillID = self.pillID[self.current_pill_index]
-        self.inputPillNameEng = self.pillNamesEng[self.current_pill_index]
+        self.update_pill_names()
         
     def retranslateUi(self, background_confirm_pill_name):
         _translate = QtCore.QCoreApplication.translate

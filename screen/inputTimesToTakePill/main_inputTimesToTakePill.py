@@ -317,7 +317,7 @@ class AddSummaryTimeScreen(QDialog):
         global globalTimesToTakePillArr
         global globalPillData
         globalPillData["timeToTake"] = globalTimesToTakePillArr
-        print("globalPillData(AddSummaryTimeScreen)", globalPillData)
+        # print("globalPillData(AddSummaryTimeScreen)", globalPillData)
 
         add_summary_time_screen = PillSummaryScreen(pillData=globalPillData, parent=None)
         __main__.widget.removeWidget(self)
