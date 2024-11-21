@@ -54,12 +54,12 @@ class HomeScreen(QDialog):
         self.last_check_times = {}
         self.sound_cooldown = False
         self.setupUi(self)
-    
+
     def setupUi(self, UIHomeScreen):
         setupUi(self, UIHomeScreen, self.pill_channel_buttons, self.pill_channel_datas, self.config)
         haveToTake = []
         self.checkTakePillThread(self.pill_channel_buttons, self.pill_channel_datas, haveToTake, self.config, UIHomeScreen)
-        
+
     def gotoPillDetailScreen(self, channelID, pill_channel_data):
         global isChangePage
         isChangePage = True
@@ -171,7 +171,6 @@ class HomeScreen(QDialog):
             if pill_time < current_time and item.get("isTaken"):
                 haveToTake.remove(item)
 
-
     def checkTakePill(self, n, pill_channel_buttons, pill_channel_datas, haveToTake, config):
         today = datetime.now().date()
         now = datetime.now()
@@ -260,7 +259,7 @@ class HomeScreen(QDialog):
                     if not pill_channel_data:
                         continue
                     
-                    is_taken = next((entry['isTaken'] for entry in pill_channel_data.get('timeToTake', []) 
+                    is_taken = next((entry['isTaken'] for entry in pill_channel_data.get('timeToTake', [])
                                     if entry['time'] == time), False)
                     
                     if is_taken:
