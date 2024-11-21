@@ -36,7 +36,8 @@ def save_userId(user_info):
 
 def show_confirmation_dialog(email):
     dialog = QDialog()
-    dialog.setWindowTitle("Confirm")
+    dialog.setWindowTitle("KLONGYAA")
+    dialog.setWindowIcon(QtGui.QIcon('../Klongyaa/shared/images/icon_k.png'))
     dialog.resize(800, 480)
     dialog.setStyleSheet("background-color : #97C7F9 ")
 
@@ -117,7 +118,8 @@ def show_confirmation_dialog(email):
 
 def show_error_dialog(message):
     dialog = QDialog()
-    dialog.setWindowTitle("Error")
+    dialog.setWindowTitle("KLONGYAA")
+    dialog.setWindowIcon(QtGui.QIcon('../Klongyaa/shared/images/icon_k.png'))
     dialog.resize(800, 480)
     dialog.setStyleSheet("background-color: #97C7F9;")
 
@@ -184,7 +186,8 @@ def check_and_update_user_id():
 
     while not config['userId']:
         dialog = QDialog()
-        dialog.setWindowTitle("Username")
+        dialog.setWindowTitle("KLONGYAA")
+        dialog.setWindowIcon(QtGui.QIcon('../Klongyaa/shared/images/icon_k.png'))
         dialog.resize(800, 480)
         dialog.setStyleSheet("background-color : #97C7F9 ")
 
