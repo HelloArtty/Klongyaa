@@ -18,7 +18,6 @@ from PyQt5.QtWidgets import QApplication, QDialog
 # from screen.homeScreen.ldr import DistanceSensor, detect_pill_removal
 from screen.homeScreen.line_messaging import sendLateMessage, sendLineMessage
 from screen.homeScreen.showTakePillDetails import showTakePillScreen
-from screen.homeScreen.test import SuccessSaveScreen
 from screen.homeScreen.ui_setup import setupUi
 from screen.inputPillNameScreen.main_inputPillnameScreen import PillNameScreen
 from screen.pillDetailScreen.main_detail_screen import DetailScreen
