@@ -1,6 +1,6 @@
 config = {
     "isFirstUse": False,
-    "botAccessToken": "LbJ8JroaA64xVZVZyXpBCWa4jt0G+cHkRgxrMbVoYTvH9ij9b3JaJoo+1xyyEFL0wYDMVAWhlqoG0ByDM+MxOWFzhjGyT4zSdepuXCZlH1FXtWpkW4M6GnM/nebNwuKdi4mFAGZfzro1yATQceP91gdB04t89/1O/w1cDnyilFU=",
+    "botAccessToken": "28xLsFSx4SzkGLoMDHDuNPBEtxPeh20ZMIMJx+eyHa4e5LtoRnlBO9EBr3BhXarQZaXgLRO9jZne0KrTgWf+rc5Y/igreg/Ok21bVBIVJ4dflIinlLAiz8VJCUm2L1IYuLxRZe/k4pA/x0aHqn8+rwdB04t89/1O/w1cDnyilFU=",
     "userId": "",
     "lineId": "",
     "email": "",
@@ -11,7 +11,7 @@ config = {
 
 # config = {
 #     "isFirstUse": False,
-#     "botAccessToken": "LbJ8JroaA64xVZVZyXpBCWa4jt0G+cHkRgxrMbVoYTvH9ij9b3JaJoo+1xyyEFL0wYDMVAWhlqoG0ByDM+MxOWFzhjGyT4zSdepuXCZlH1FXtWpkW4M6GnM/nebNwuKdi4mFAGZfzro1yATQceP91gdB04t89/1O/w1cDnyilFU=",
+#     "botAccessToken": "28xLsFSx4SzkGLoMDHDuNPBEtxPeh20ZMIMJx+eyHa4e5LtoRnlBO9EBr3BhXarQZaXgLRO9jZne0KrTgWf+rc5Y/igreg/Ok21bVBIVJ4dflIinlLAiz8VJCUm2L1IYuLxRZe/k4pA/x0aHqn8+rwdB04t89/1O/w1cDnyilFU=",
 #     "userId": "",
 #     "lineId": "",
 #     "email": "",

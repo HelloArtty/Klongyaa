@@ -1,5 +1,6 @@
 import datetime
 import json
+import logging
 import os
 import sys
 import threading
@@ -144,12 +145,6 @@ class HomeScreen(QDialog):
         res = requests.put(config["url"] + "/user/userTakePill/" + id)
         print("Update pill status response:", res.status_code)
 
-        # Pass pillData when creating SuccessSaveScreen
-        # success_save_screen = SuccessSaveScreen()
-        
-        # __main__.widget.addWidget(success_save_screen)
-        # __main__.widget.setCurrentIndex(__main__.widget.currentIndex() + 1)
-        # __main__.widget.removeWidget(self.detailScreen)
         
         self.detailScreen.close()  # ปิดหน้าจอการทานยา
         self.showHomeScreen(pill_channel_buttons)  # แสดงหน้าจอหลัก
@@ -253,7 +248,7 @@ class HomeScreen(QDialog):
                     continue  # Continue with other checks to avoid duplicate notification
                 
                 # ตรวจสอบการแจ้งเตือนถ้าถึงเวลา (ในช่วง 5 นาที)
-                if 0 <= time_diff.total_seconds() <= 120:
+                if 0 <= time_diff.total_seconds() <= 300:
                     pill_channel_data = checkTakePill(index)
                     if not pill_channel_data:
                         continue
@@ -345,33 +340,159 @@ class HomeScreen(QDialog):
             self.alreadyShownPopup[next_pill["channelId"]] = True
             return  # หยุดหลังจากแสดงการแจ้งเตือนครั้งแรกที่ยังไม่ได้ทานยา
 
-    def checkTakePillThread(self, pill_channel_buttons, pill_channel_datas,haveToTake,config, UIHomeScreen):
+    def checkTakePillThread(self, pill_channel_buttons, pill_channel_datas, haveToTake, config, UIHomeScreen):
         self.thread = QThread()
-        self.worker = Worker()
+        self.worker = Worker(check_interval=9)  # กำหนด interval เป็น 9 วินาที
         self.worker.moveToThread(self.thread)
+        
+        # เชื่อมต่อสัญญาณ
         self.thread.started.connect(self.worker.run)
         self.worker.finished.connect(self.thread.quit)
         self.worker.finished.connect(self.worker.deleteLater)
         self.thread.finished.connect(self.thread.deleteLater)
-        self.worker.progress.connect(lambda n : self.checkTakePill(n, pill_channel_buttons, pill_channel_datas,haveToTake,config))
+        
+        # เชื่อมต่อสัญญาณใหม่
+        self.worker.progress.connect(
+            lambda n: self.checkTakePill(n, pill_channel_buttons, pill_channel_datas, haveToTake, config)
+        )
+        self.worker.error.connect(self.handleWorkerError)
+        self.worker.status_changed.connect(self.handleWorkerStatus)
+        
         self.thread.start()
 
-isFirstLoop = True
+    def handleWorkerError(self, error_message):
+        print(f"Worker error: {error_message}")
+        # จัดการกับข้อผิดพลาดตามที่ต้องการ
+
+    def handleWorkerStatus(self, status):
+        print(f"Worker status: {status}")
+        # อัพเดทสถานะ UI ตามที่ต้องการ
+
+    def closeEvent(self, event):
+        if hasattr(self, 'worker'):
+            self.worker.stop()
+        super().closeEvent(event)
 
 
 class Worker(QObject):
     finished = pyqtSignal()
     progress = pyqtSignal(int)
+    error = pyqtSignal(str)
+    status_changed = pyqtSignal(str)  # สำหรับแจ้งสถานะการทำงาน
 
+    def __init__(self, check_interval=9):
+        """
+        Initialize worker with configurable parameters
+        
+        Args:
+            check_interval (int): ระยะเวลาในการตรวจสอบ (วินาที)
+        """
+        super().__init__()
+        self._running = True
+        self._paused = False
+        self.check_interval = check_interval
+        self.last_check_time = datetime.now()
+        self.execution_count = 0
+        self.max_retries = 3
+        
+        # Setup logging
+        logging.basicConfig(level=logging.INFO)
+        self.logger = logging.getLogger(__name__)
+
+    def stop(self):
+        """หยุดการทำงานของ worker อย่างปลอดภัย"""
+        self._running = False
+        self.status_changed.emit("Stopped")
+        self.logger.info("Worker stopped")
+
+    def pause(self):
+        """หยุดการทำงานชั่วคราว"""
+        self._paused = True
+        self.status_changed.emit("Paused")
+        self.logger.info("Worker paused")
+
+    def resume(self):
+        """กลับมาทำงานต่อ"""
+        self._paused = False
+        self.status_changed.emit("Resumed")
+        self.logger.info("Worker resumed")
+
+    def _should_check(self):
+        """
+        ตรวจสอบว่าถึงเวลาที่ควรทำงานหรือยัง
+        
+        Returns:
+            bool: True ถ้าควรทำการตรวจสอบ
+        """
+        current_time = datetime.now()
+        time_elapsed = (current_time - self.last_check_time).total_seconds()
+        return time_elapsed >= self.check_interval
+
+    def _perform_check(self):
+        """
+        ทำการตรวจสอบและส่งสัญญาณ progress
+        
+        Returns:
+            bool: True ถ้าสำเร็จ, False ถ้าล้มเหลว
+        """
+        try:
+            self.execution_count += 1
+            self.progress.emit(self.execution_count)
+            self.last_check_time = datetime.now()
+            return True
+        except Exception as e:
+            self.logger.error(f"Error during check: {str(e)}")
+            self.error.emit(f"Check error: {str(e)}")
+            return False
 
     def run(self):
-        global isFirstLoop
-        num = 0
-        while True :
-            if not isFirstLoop:
-                sleep(9)
-            isFirstLoop = False
-            if isChangePage : break
-            self.progress.emit(num + 1)
-            num += 1
-        self.finished.emit()
+        """
+        Main worker loop with improved error handling and performance
+        """
+        retry_count = 0
+        self.logger.info("Worker started")
+        self.status_changed.emit("Running")
+
+        try:
+            while self._running:
+                if isChangePage:  # ตรวจสอบเงื่อนไขการเปลี่ยนหน้า
+                    self.logger.info("Page change detected, stopping worker")
+                    break
+
+                if not self._paused and self._should_check():
+                    if not self._perform_check():
+                        retry_count += 1
+                        if retry_count >= self.max_retries:
+                            self.logger.error("Max retries reached")
+                            self.error.emit("Max retries reached")
+                            break
+                        sleep(1)  # รอสักครู่ก่อนลองใหม่
+                        continue
+                    retry_count = 0  # รีเซ็ตตัวนับการลองใหม่เมื่อสำเร็จ
+
+                # ใช้ sleep ที่สั้นลงเพื่อการตอบสนองที่ดีขึ้น
+                sleep(0.1)
+
+        except Exception as e:
+            self.logger.error(f"Worker error: {str(e)}")
+            self.error.emit(f"Fatal error: {str(e)}")
+        finally:
+            self._running = False
+            self.logger.info("Worker finished")
+            self.status_changed.emit("Finished")
+            self.finished.emit()
+
+    def get_statistics(self):
+        """
+        รวบรวมสถิติการทำงาน
+        
+        Returns:
+            dict: สถิติการทำงานต่างๆ
+        """
+        return {
+            "execution_count": self.execution_count,
+            "running_time": (datetime.now() - self.last_check_time).total_seconds(),
+            "is_running": self._running,
+            "is_paused": self._paused,
+            "check_interval": self.check_interval
+        }
